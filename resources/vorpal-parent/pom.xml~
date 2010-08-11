@@ -1,0 +1,917 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  ~ Copyright 2009-2010 WorldWide Conferencing, LLC
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <!--
+  Global parent project model. Defines the settings common to all the projects in Lift.
+
+  This includes a standard release profile (viz., "lift-release") that all projects can use.
+  If the profile is not appropriate for your project, define your own release profile (in the
+  form of ${artifactId}-release) and change the release plugin configuration parameter
+  <arguments> </arguments> to activate your profile instead of the "lift-release" profile.
+
+  Dependencies and plugins are also pre-configured with standard settings, these may be
+  overridden by individual projects as well.
+  -->
+
+  <!--
+    ~ The Basics
+  -->
+  <groupId>net.liftweb</groupId>
+  <artifactId>lift-parent</artifactId>
+  <version>3.0-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+  <!--
+    ~ More Project Information
+  -->
+  <name>Lift Web Framework Parent Project Model</name>
+  <description>
+    Global project parent for Lift Web Framework.
+    Lift is built on Scala, a hybrid Functional and O-O language that compiles code down to the Java Virtual Machine.
+  </description>
+  <url>http://dev.liftweb.net</url>
+  <inceptionYear>2006</inceptionYear>
+  <organization>
+    <name>WorldWide Conferencing, LLC</name>
+    <url>http://www.liftweb.net</url>
+  </organization>
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+      <comments>Lift open source software is licensed under an Apache 2.0 license.</comments>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <id>dpp</id>
+      <name>David Pollak</name>
+      <timezone>-8</timezone>
+      <email>dpp [at] liftweb.net</email>
+      <roles>
+        <role>BDFL</role>
+        <role>Feeder of the Bears</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>Burak.Emir</id>
+      <name>Burak Emir</name>
+    </developer>
+    <developer>
+      <id>philipp.schmidt</id>
+      <name>philipp.schmidt</name>
+    </developer>
+    <developer>
+      <id>cwilkes</id>
+      <name>cwilkes</name>
+    </developer>
+    <developer>
+      <id>julien.wetterwald</id>
+      <name>julien.wetterwald</name>
+    </developer>
+    <developer>
+      <id>leppoc</id>
+      <name>leppoc</name>
+    </developer>
+    <developer>
+      <id>stepan.koltsov</id>
+      <name>stepan.koltsov</name>
+    </developer>
+    <developer>
+      <id>jorge.ortiz</id>
+      <name>Jorge Ortiz</name>
+      <timezone>-8</timezone>
+      <email>jorge [at] liftweb.net</email>
+    </developer>
+    <developer>
+      <id>stevej</id>
+      <name>Steve Jenson</name>
+    </developer>
+    <developer>
+      <id>alex.boisvert</id>
+      <name>Alex Boisvert</name>
+    </developer>
+    <developer>
+      <name>OctoberDan</name>
+    </developer>
+    <developer>
+      <id>viktor.klang</id>
+      <name>Viktor Klang a.k.a. Sevikkla</name>
+      <timezone>+1</timezone>
+      <roles>
+        <role>Enhancement specialist</role>
+        <role>Funny guy</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>david.bernard.31</id>
+      <name>David Bernard</name>
+      <email>dwayne [at] liftweb.net</email>
+      <timezone>+1</timezone>
+      <roles>
+        <role>maven support</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>mstarzyk</id>
+      <name>Maciek Starzyk</name>
+    </developer>
+    <developer>
+      <id>etorreborre</id>
+      <name>Eric Torreborre</name>
+      <timezone>+9</timezone>
+    </developer>
+    <developer>
+      <id>marius.danciu</id>
+      <name>Marius Danciu</name>
+      <timezone>+2</timezone>
+    </developer>
+    <developer>
+      <id>tyler.weir</id>
+      <name>Tyler Weir</name>
+      <timezone>-5</timezone>
+    </developer>
+    <developer>
+      <id>timperrett</id>
+      <name>Tim Perrett</name>
+      <email>hello [at] timperrett.com</email>
+      <timezone>0</timezone>
+      <roles>
+        <role>Installation and Deployment</role>
+        <role>Advanced Localization</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>dchenbecker</id>
+      <name>Derek Chen-Becker</name>
+      <email>java [at] chen-becker.org</email>
+      <timezone>-7</timezone>
+    </developer>
+    <developer>
+      <id>jboner</id>
+      <name>Jonas Bonér</name>
+      <email>jonas [at] jonasboner [dot] com</email>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>heiko.seeberger</id>
+      <name>Heiko Seeberger</name>
+      <email>heiko [dot] seeberger [at] googlemail [dot] com</email>
+      <timezone>+1</timezone>
+      <roles>
+        <role>OSGi expert and Scala enthusiast</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>indrajitr</id>
+      <name>Indrajit Raychaudhuri</name>
+      <email>irc [at] indrajit [dot] com</email>
+      <timezone>+5.5</timezone>
+    </developer>
+    <developer>
+      <id>jonifreeman</id>
+      <name>Joni Freeman</name>
+      <email>joni [dot] freeman [at] reaktor [dot] fi</email>
+      <timezone>+2</timezone>
+    </developer>
+    <developer>
+      <id>jeppenejsum</id>
+      <name>Jeppe Nejsum Madsen</name>
+      <email>jeppe [at] ingolfs [dot] dk</email>
+      <timezone>+1</timezone>
+    </developer>
+    <developer>
+      <id>dridus</id>
+      <name>Ross Mellgren</name>
+    </developer>
+    <developer>
+      <id>hoffrocket</id>
+      <name>Jon Hoffman</name>
+    </developer>
+    <developer>
+      <id>nafg</id>
+      <name>Naftoli Gugenheim</name>
+    </developer>
+    <developer>
+      <id>nuttycombe</id>
+      <name>Kris Nuttycombe</name>
+    </developer>
+    <developer>
+      <id>jstrachan</id>
+      <name>James Strachan</name>
+    </developer>
+    <developer>
+      <id>eltimn</id>
+      <name>Tim Nelson</name>
+    </developer>
+  </developers>
+  <mailingLists>
+    <mailingList>
+      <name>User and Developer Discussion List</name>
+      <archive>http://groups.google.com/group/liftweb</archive>
+      <post>liftweb@googlegroups.com</post>
+      <subscribe>liftweb+subscribe@googlegroups.com</subscribe>
+      <unsubscribe>liftweb+unsubscribe@googlegroups.com</unsubscribe>
+    </mailingList>
+    <mailingList>
+      <name>Committer Discussion List</name>
+      <archive>http://groups.google.com/group/lift-committers</archive>
+      <!-- <post>lift-committers@googlegroups.com</post> -->
+      <!-- <subscribe>lift-committers+subscribe@googlegroups.com</subscribe> -->
+      <!-- <unsubscribe>lift-committers+unsubscribe@googlegroups.com</unsubscribe> -->
+    </mailingList>
+    <mailingList>
+      <name>Announcement List</name>
+      <archive>http://groups.google.com/group/lift-announce</archive>
+      <!-- <post>lift-announce@googlegroups.com</post> -->
+      <subscribe>lift-announce+subscribe@googlegroups.com</subscribe>
+      <unsubscribe>lift-announce+unsubscribe@googlegroups.com</unsubscribe>
+    </mailingList>
+  </mailingLists>
+
+  <!--
+    ~ Environment Settings
+  -->
+  <scm>
+    <connection>scm:git:git://github.com/dpp/liftweb.git</connection>
+    <developerConnection>scm:git:git@github.com:dpp/liftweb.git</developerConnection>
+    <url>http://github.com/dpp/liftweb/tree/master</url>
+  </scm>
+  <issueManagement>
+    <system>assembla</system>
+    <url>http://www.assembla.com/spaces/liftweb/tickets/</url>
+  </issueManagement>
+  <ciManagement>
+    <system>hudson</system>
+    <url>http://hudson.scala-tools.org/job/lift-parent/</url>
+    <!-- <notifiers /> -->
+  </ciManagement>
+  <distributionManagement>
+    <repository>
+      <id>nexus.scala-tools.org</id>
+      <name>Scala-Tools Distribution Repository for Releases</name>
+      <url>http://nexus.scala-tools.org/content/repositories/releases</url>
+    </repository>
+    <snapshotRepository>
+      <id>nexus.scala-tools.org</id>
+      <name>Scala-Tools Distribution Repository for Snapshots</name>
+      <url>http://nexus.scala-tools.org/content/repositories/snapshots</url>
+      <uniqueVersion>false</uniqueVersion>
+    </snapshotRepository>
+    <!-- Site omitted, each project/profile must provide their own -->
+    <!--<site />-->
+  </distributionManagement>
+  <properties>
+    <!-- Common plugin settings -->
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding>
+
+    <scala.version>2.7.7</scala.version>
+    <!-- Cannot specify 1.6) as range since this pulls in the 1.6.0-RC0 version -->
+    <slf4j.version>[1.5.6,1.5.99)</slf4j.version>
+    <!-- Note: logback.version must be compatible with slf4j.version -->
+    <logback.version>0.9.20</logback.version>
+    <atomikos.version>3.2.3</atomikos.version>
+  </properties>
+
+  <!--
+    ~ Dependency Settings
+  -->
+  <dependencyManagement>
+    <dependencies>
+      <!--
+      Compile scope: available in all classpath, transitive
+      -->
+      <dependency>
+        <groupId>org.scala-lang</groupId>
+        <artifactId>scala-library</artifactId>
+        <version>${scala.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.scala-libs</groupId>
+        <artifactId>scalajpa</artifactId>
+        <version>1.1</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.mail</groupId>
+        <artifactId>mail</artifactId>
+        <version>[1.4,1.4.3)</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-codec</groupId>
+        <artifactId>commons-codec</artifactId>
+        <!--<version>[1.3,1.4]</version>-->
+        <version>1.3</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-fileupload</groupId>
+        <artifactId>commons-fileupload</artifactId>
+        <version>1.2.1</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-httpclient</groupId>
+        <artifactId>commons-httpclient</artifactId>
+        <version>3.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-api</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.scalamodules</groupId>
+        <artifactId>scalamodules-core</artifactId>
+        <version>1.5</version>
+      </dependency>
+      <dependency>
+        <groupId>org.ops4j.pax.swissbox</groupId>
+        <artifactId>pax-swissbox-extender</artifactId>
+        <version>1.2.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.thoughtworks.paranamer</groupId>
+        <artifactId>paranamer</artifactId>
+        <version>2.0</version>
+      </dependency>
+      <dependency>
+        <groupId>net.databinder</groupId>
+        <artifactId>dispatch-http_${scala.version}</artifactId>
+        <version>0.7.1</version>
+      </dependency>
+      <dependency>
+        <groupId>net.jcip</groupId>
+        <artifactId>jcip-annotations</artifactId>
+        <version>1.0</version>
+      </dependency>
+      <dependency>
+        <groupId>com.rabbitmq</groupId>
+        <artifactId>amqp-client</artifactId>
+        <version>1.7.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.sanselan</groupId>
+        <artifactId>sanselan</artifactId>
+        <version>0.97-incubator</version>
+      </dependency>
+      <dependency>
+        <groupId>org.openid4java</groupId>
+        <artifactId>openid4java-consumer</artifactId>
+        <version>[0.9.3,0.9.5]</version>
+        <exclusions>
+          <exclusion>
+            <artifactId>commons-logging</artifactId>
+            <groupId>commons-logging</groupId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>jivesoftware</groupId>
+        <artifactId>smack</artifactId>
+        <version>3.1.0</version>
+        <exclusions>
+          <exclusion>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>com.atomikos</groupId>
+        <artifactId>transactions</artifactId>
+        <version>${atomikos.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.atomikos</groupId>
+        <artifactId>transactions-jta</artifactId>
+        <version>${atomikos.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.atomikos</groupId>
+        <artifactId>transactions-api</artifactId>
+        <version>${atomikos.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.atomikos</groupId>
+        <artifactId>atomikos-util</artifactId>
+        <version>${atomikos.version}</version>
+      </dependency>
+      <dependency>
+       <groupId>org.apache.geronimo.specs</groupId>
+        <artifactId>geronimo-jta_1.1_spec</artifactId>
+        <version>1.1.1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.hibernate</groupId>
+        <artifactId>hibernate-entitymanager</artifactId>
+        <version>3.4.0.GA</version>
+        <exclusions>
+          <exclusion>
+            <groupId>javax.transaction</groupId>
+            <artifactId>jta</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.mongodb</groupId>
+        <artifactId>mongo-java-driver</artifactId>
+        <version>2.0</version>
+      </dependency>
+
+      <!--
+      Provided scope: provided by container, available only in compile and test classpath, non-transitive
+      -->
+      <dependency>
+        <groupId>ch.qos.logback</groupId>
+        <artifactId>logback-classic</artifactId>
+        <version>${logback.version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
+        <version>1.2.14</version>
+        <!--<scope>provided</scope>-->
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jcl-over-slf4j</artifactId>
+        <version>${slf4j.version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>servlet-api</artifactId>
+        <version>2.5</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>javax.persistence</groupId>
+        <artifactId>persistence-api</artifactId>
+        <version>1.0</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>org.osgi.compendium</artifactId>
+        <version>1.4.0</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.ops4j.pax.web</groupId>
+        <artifactId>pax-web-api</artifactId>
+        <version>0.7.2</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <!--
+      Runtime scope: provided in runtime, available only in runtime and test classpath, not compile classpath, non-transitive
+      -->
+      <dependency>
+        <groupId>com.h2database</groupId>
+        <artifactId>h2</artifactId>
+        <version>1.2.134</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.derby</groupId>
+        <artifactId>derby</artifactId>
+        <version>10.5.3.0_1</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      <dependency>
+        <groupId>postgresql</groupId>
+        <artifactId>postgresql</artifactId>
+        <version>8.4-701.jdbc3</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      <dependency>
+        <groupId>mysql</groupId>
+        <artifactId>mysql-connector-java</artifactId>
+        <version>5.1.9</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      <dependency>
+        <groupId>net.sourceforge.jtds</groupId>
+        <artifactId>jtds</artifactId>
+        <version>1.2.4</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      <!--
+      <dependency>
+        <groupId>com.oracle</groupId>
+        <artifactId>ojdbc6</artifactId>
+        <version>11.1.0.7.0</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      -->
+      <dependency>
+        <!--for jdk 1.5 and earlier-->
+        <groupId>com.oracle</groupId>
+        <artifactId>ojdbc14</artifactId>
+        <version>10.2.0.3.0</version>
+        <scope>runtime</scope>
+        <optional>true</optional>
+      </dependency>
+      <!--
+      <dependency>
+        <groupId>com.sap</groupId>
+        <artifactId>sapdbc</artifactId>
+        <scope>runtime</scope>
+        <version>7.6.0.5</version>
+        <optional>true</optional>
+      </dependency>
+      -->
+      <!--
+      Test scope: available only in test classpath, non-transitive
+      -->
+      <dependency>
+        <groupId>org.scala-tools.testing</groupId>
+        <artifactId>specs</artifactId>
+        <version>1.6.1</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.scala-tools.testing</groupId>
+        <artifactId>scalacheck</artifactId>
+        <version>1.6</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>4.7</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-simple</artifactId>
+        <version>${slf4j.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.mortbay.jetty</groupId>
+        <artifactId>jetty</artifactId>
+        <version>[6.1.6,7.0)</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>net.sourceforge.jwebunit</groupId>
+        <artifactId>jwebunit-htmlunit-plugin</artifactId>
+        <version>2.2</version>
+        <scope>test</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <!--
+    ~ Repositories Settings
+  -->
+  <repositories>
+    <repository>
+      <id>scala-tools.releases</id>
+      <name>Scala-Tools Dependencies Repository for Releases</name>
+      <url>http://scala-tools.org/repo-releases</url>
+    </repository>
+    <repository>
+      <id>scala-tools.snapshots</id>
+      <name>Scala-Tools Dependencies Repository for Snapshots</name>
+      <url>http://scala-tools.org/repo-snapshots</url>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>scala-tools.releases</id>
+      <name>Scala-Tools Plugins Repository for Releases</name>
+      <url>http://scala-tools.org/repo-releases</url>
+    </pluginRepository>
+    <pluginRepository>
+      <id>scala-tools.snapshots</id>
+      <name>Scala-Tools Plugins Repository for Snapshots</name>
+      <url>http://scala-tools.org/repo-snapshots</url>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <!--
+    ~ Build Settings
+  -->
+  <build>
+    <sourceDirectory>src/main/scala</sourceDirectory>
+    <testSourceDirectory>src/test/scala</testSourceDirectory>
+    <extensions>
+      <extension>
+        <groupId>org.apache.maven.wagon</groupId>
+        <artifactId>wagon-webdav</artifactId>
+        <version>1.0-beta-2</version>
+      </extension>
+    </extensions>
+    <pluginManagement>
+      <plugins>
+        <!--
+        Plugins distributed by Maven (alphabetically sorted)
+        -->
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-assembly-plugin</artifactId>
+          <version>2.2-beta-5</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-changes-plugin</artifactId>
+          <version>2.3</version>
+          <configuration>
+            <filteringChanges>true</filteringChanges>
+            <issueLinkTemplatePerSystem>
+              <assembla>%URL%/%ISSUE%</assembla>
+            </issueLinkTemplatePerSystem>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-clean-plugin</artifactId>
+          <version>2.4.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>2.3.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-dependency-plugin</artifactId>
+          <version>2.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-deploy-plugin</artifactId>
+          <version>2.5</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-eclipse-plugin</artifactId>
+          <version>2.8</version>
+          <configuration>
+            <downloadSources>true</downloadSources>
+            <additionalProjectnatures>
+              <projectnature>ch.epfl.lamp.sdt.core.scalanature</projectnature>
+            </additionalProjectnatures>
+            <additionalBuildcommands>
+              <buildcommand>ch.epfl.lamp.sdt.core.scalabuilder</buildcommand>
+            </additionalBuildcommands>
+            <classpathContainers>
+              <classpathContainer>ch.epfl.lamp.sdt.launching.SCALA_CONTAINER</classpathContainer>
+              <classpathContainer>org.eclipse.jdt.launching.JRE_CONTAINER</classpathContainer>
+            </classpathContainers>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-enforcer-plugin</artifactId>
+          <version>1.0-beta-1</version>
+          <configuration>
+            <rules>
+              <requireMavenVersion>
+                <version>[2.2.1,3.0)</version>
+              </requireMavenVersion>
+            </rules>
+          </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>enforce</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-idea-plugin</artifactId>
+          <version>2.2</version>
+          <configuration>
+            <downloadSources>true</downloadSources>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-install-plugin</artifactId>
+          <version>2.3.1</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-invoker-plugin</artifactId>
+          <version>1.5</version>
+          <configuration>
+            <streamLogs>true</streamLogs>
+            <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>2.3.1</version>
+          <configuration>
+            <archive>
+              <manifest>
+                <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+              </manifest>
+            </archive>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-javadoc-plugin</artifactId>
+          <version>2.7</version>
+          <configuration>
+            <detectLinks>true</detectLinks>
+            <linksource>true</linksource>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-release-plugin</artifactId>
+          <version>2.0</version>
+          <configuration>
+            <autoVersionSubmodules>true</autoVersionSubmodules>
+            <developmentVersion>${project.version}</developmentVersion>
+            <!--<branchName>Lift-${releaseVersion}</branchName>-->
+            <scmCommentPrefix>[lift-release] </scmCommentPrefix>
+            <!--<tag>Lift-${releaseVersion}</tag>-->
+            <releaseProfiles>lift-release</releaseProfiles>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-resources-plugin</artifactId>
+          <version>2.4.3</version>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-source-plugin</artifactId>
+          <version>2.1.2</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>jar-no-fork</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-site-plugin</artifactId>
+          <version>2.1.1</version>
+          <configuration>
+            <generateSitemap>true</generateSitemap>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-surefire-plugin</artifactId>
+          <version>2.5</version>
+        </plugin>
+        <!--
+        Plugins distributed by third-parties (alphabetically sorted)
+        -->
+        <plugin>
+          <groupId>net.sf.alchim</groupId>
+          <artifactId>yuicompressor-maven-plugin</artifactId>
+          <version>0.7.1</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>compress</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <version>2.0.1</version>
+          <extensions>true</extensions>
+          <executions>
+            <execution>
+              <goals>
+                <goal>bundle</goal>
+              </goals>
+            </execution>
+          </executions>
+          <configuration>
+            <instructions>
+              <Bundle-RequiredExecutionEnvironment>J2SE-1.5,JavaSE-1.6</Bundle-RequiredExecutionEnvironment>
+              <_versionpolicy>[$(version;==;$(@)),$(version;=+;$(@)))</_versionpolicy>
+              <DynamicImport-Package>*</DynamicImport-Package>
+            </instructions>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.mortbay.jetty</groupId>
+          <artifactId>maven-jetty-plugin</artifactId>
+          <version>6.1.22</version>
+          <configuration>
+            <contextPath>/</contextPath>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.scala-tools</groupId>
+          <artifactId>maven-scala-plugin</artifactId>
+          <version>2.13.1</version>
+          <configuration>
+            <charset>${project.build.sourceEncoding}</charset>
+            <jvmArgs>
+              <jvmArg>-Xmx1024m</jvmArg>
+            </jvmArgs>
+            <args>
+              <arg>-Xno-varargs-conversion</arg>
+            </args>
+          </configuration>
+          <executions>
+            <execution>
+              <goals>
+                <goal>compile</goal>
+                <goal>testCompile</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+
+  </build>
+
+  <!--
+    ~ Reporting Settings
+  -->
+  <!-- Reporting omitted, each project/profile must provide their own -->
+  <!--<reporting />-->
+
+  <!--
+    ~ Profile Settings
+  -->
+  <profiles>
+    <profile>
+      <id>lift-debug</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.scala-tools</groupId>
+            <artifactId>maven-scala-plugin</artifactId>
+            <configuration>
+              <args>
+                <arg>-unchecked</arg>
+                <arg>-deprecation</arg>
+              </args>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <profile>
+      <id>lift-hudson</id>
+      <!-- no-op at top level -->
+    </profile>
+    <profile>
+      <id>lift-release</id>
+      <!-- no-op at top level -->
+    </profile>
+  </profiles>
+
+</project>

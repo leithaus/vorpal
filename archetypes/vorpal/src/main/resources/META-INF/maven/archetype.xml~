@@ -1,0 +1,38 @@
+<archetype xmlns="http://maven.apache.org/plugins/maven-archetype-plugin/archetype/1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-archetype-plugin/archetype/1.0.0 http://maven.apache.org/xsd/archetype-1.0.0.xsd">
+  <id>vorpal-artifactId</id>
+  <resources>
+    <resource>src/main/bnfc/build.xml</resource>
+    <resource>src/main/bnfc/vorpal.cf</resource>
+    <resource>src/main/resources/props/default.props</resource>
+  </resources>
+  <sources>    
+    <source>src/main/scala/bootstrap/liftweb/Boot.scala</source>
+    <source>src/main/scala/com/biosimilarity/lift/comet</source>
+    <source>src/main/scala/com/biosimilarity/lift/lib/DepencyFactory.scala</source>
+    <source>src/main/scala/com/biosimilarity/lift/model/REPL.scala</source>
+    <source>src/main/scala/com/biosimilarity/lift/model/User.scala</source>
+    <source>src/main/scala/com/biosimilarity/lift/snippet/HelloWorld.scala</source>
+    <source>src/main/scala/com/biosimilarity/lift/snippet/Misc.scala</source>
+    <source>src/main/scala/com/biosimilarity/lift/snippet/REPLForm.scala</source>
+    <source>src/main/scala/com/biosimilarity/lift/view</source>
+    <source>src/main/webapp/AJAXREPLForm.xhtml</source>
+    <source>src/main/webapp/GrammarSpec.xhtml</source>
+    <source>src/main/webapp/file_upload.html</source>
+    <source>src/main/webapp/index.html</source>    
+    <source>src/main/webapp/WEB-INF/web.xml</source>
+    <source>src/main/webapp/images/ajax-loader.gif</source>
+    <source>src/main/webapp/static/index.html</source>
+    <source>src/main/webapp/templates-hidden/default.html</source>
+    <source>src/main/webapp/templates-hidden/wizard-all.html</source>
+  </sources>
+  <testResources>
+    <source>src/test/resources</source>
+  </testResources>
+  <testSources>    
+    <source>src/test/scala/LiftConsole.scala</source>
+    <source>src/test/scala/RunWebApp.scala</source>
+    <source>src/test/scala/com/biosimilarity/lift/AppTest.scala</source>
+    <source>src/test/scala/com/biosimilarity/lift/snippet/HelloWorldTest.scala</source>
+  </testSources>
+</archetype>

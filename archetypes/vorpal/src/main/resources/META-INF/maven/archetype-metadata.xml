@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<archetype-descriptor name="vorpal-archetype-basic">
+  <requiredProperties>
+    <requiredProperty key="scalaVersion">
+      <defaultValue>${scala.version}</defaultValue>
+    </requiredProperty>
+    <requiredProperty key="liftVersion">
+      <defaultValue>${lift.version}</defaultValue>
+    </requiredProperty>
+    <requiredProperty key="vorpalVersion">
+      <defaultValue>${vorpal.version}</defaultValue>
+    </requiredProperty>
+  </requiredProperties>
+  <fileSets>
+    <fileSet encoding="UTF-8" filtered="false">
+      <directory>src</directory>
+      <includes>
+        <include>packageLinkDefs.properties</include>
+      </includes>
+    </fileSet>
+    <fileSet encoding="UTF-8" filtered="true">
+      <directory>src/main/resources</directory>
+    </fileSet>
+    <fileSet encoding="UTF-8" filtered="true">
+      <directory>src/main/scala</directory>
+      <includes>
+        <include>bootstrap/**/*.scala</include>
+      </includes>
+    </fileSet>
+    <fileSet encoding="UTF-8" filtered="true" packaged="true">
+      <directory>src/main/scala</directory>
+      <includes>
+        <include>**/*.scala</include>
+        <include>**/.keep</include>
+      </includes>
+      <excludes>
+        <exclude>bootstrap/**/*.scala</exclude>
+      </excludes>
+    </fileSet>
+    <fileSet encoding="UTF-8">
+      <directory>src/main/webapp</directory>
+      <includes>
+        <include>**/*.png</include>
+        <include>**/*.gif</include>
+      </includes>
+    </fileSet>
+    <fileSet encoding="UTF-8" filtered="true">
+      <directory>src/main/webapp</directory>
+      <includes>
+        <include>**/*</include>
+      </includes>
+      <excludes>
+        <exclude>**/*.png</exclude>
+        <exclude>**/*.gif</exclude>
+      </excludes>
+    </fileSet>
+    <fileSet encoding="UTF-8" filtered="true">
+      <directory>src/test/resources</directory>
+    </fileSet>
+    <fileSet encoding="UTF-8" filtered="true">
+      <directory>src/test/scala</directory>
+      <includes>
+        <include>**/LiftConsole.scala</include>
+        <include>**/RunWebApp.scala</include>
+      </includes>
+    </fileSet>
+    <fileSet encoding="UTF-8" filtered="true" packaged="true">
+      <directory>src/test/scala</directory>
+      <includes>
+        <include>**/*.scala</include>
+        <include>**/.keep</include>
+      </includes>
+      <excludes>
+        <exclude>**/LiftConsole.scala</exclude>
+        <exclude>**/RunWebApp.scala</exclude>
+      </excludes>
+    </fileSet>
+  </fileSets>
+</archetype-descriptor>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!ELEMENT Integer EMPTY>
+<!ATTLIST Integer value CDATA #REQUIRED>
+<!ELEMENT Double EMPTY>
+<!ATTLIST Double value CDATA #REQUIRED>
+<!ELEMENT String EMPTY>
+<!ATTLIST String value CDATA #REQUIRED>
+<!ELEMENT Ident EMPTY>
+<!ATTLIST Ident value CDATA #REQUIRED>
+<!ELEMENT Char EMPTY>
+<!ATTLIST Char value CDATA #REQUIRED>
+
+<!ELEMENT LGrammar ((LGr, LDef*))>
+<!ELEMENT LGr EMPTY>
+
+<!ELEMENT LDef ((DefAll, Def) | (DefSome, Ident+, Def) | (LDefView, Ident+))>
+<!ELEMENT DefAll EMPTY>
+<!ELEMENT DefSome EMPTY>
+<!ELEMENT LDefView EMPTY>
+
+<!ELEMENT Grammar ((Grammar, Def*)?)>
+
+<!ELEMENT Def ((Rule, Label, Cat, Item*) | (Comment, String) | (Comments, String, String) | (Internal, Label, Cat, Item*) | (Token, Ident, Reg) | (PosToken, Ident, Reg) | (Entryp, Ident+) | (Separator, MinimumSize, Cat, String) | (Terminator, MinimumSize, Cat, String) | (Coercions, Ident, Integer) | (Rules, Ident, RHS+) | (Function, Ident, Arg*, Exp) | (Layout, String+) | (LayoutStop, String+) | (LayoutTop))>
+<!ELEMENT Rule EMPTY>
+<!ELEMENT Comment EMPTY>
+<!ELEMENT Comments EMPTY>
+<!ELEMENT Internal EMPTY>
+<!ELEMENT Token EMPTY>
+<!ELEMENT PosToken EMPTY>
+<!ELEMENT Entryp EMPTY>
+<!ELEMENT Separator EMPTY>
+<!ELEMENT Terminator EMPTY>
+<!ELEMENT Coercions EMPTY>
+<!ELEMENT Rules EMPTY>
+<!ELEMENT Function EMPTY>
+<!ELEMENT Layout EMPTY>
+<!ELEMENT LayoutStop EMPTY>
+<!ELEMENT LayoutTop EMPTY>
+
+<!ELEMENT Item ((Terminal, String) | (NTerminal, Cat))>
+<!ELEMENT Terminal EMPTY>
+<!ELEMENT NTerminal EMPTY>
+
+<!ELEMENT Cat ((ListCat, Cat) | (IdCat, Ident))>
+<!ELEMENT ListCat EMPTY>
+<!ELEMENT IdCat EMPTY>
+
+<!ELEMENT Label ((LabNoP, LabelId) | (LabP, LabelId, ProfItem+) | (LabPF, LabelId, LabelId, ProfItem+) | (LabF, LabelId, LabelId))>
+<!ELEMENT LabNoP EMPTY>
+<!ELEMENT LabP EMPTY>
+<!ELEMENT LabPF EMPTY>
+<!ELEMENT LabF EMPTY>
+
+<!ELEMENT LabelId ((Id, Ident) | (Wild) | (ListE) | (ListCons) | (ListOne))>
+<!ELEMENT Id EMPTY>
+<!ELEMENT Wild EMPTY>
+<!ELEMENT ListE EMPTY>
+<!ELEMENT ListCons EMPTY>
+<!ELEMENT ListOne EMPTY>
+
+<!ELEMENT ProfItem ((ProfIt, IntList*, Integer*))>
+<!ELEMENT ProfIt EMPTY>
+
+<!ELEMENT IntList ((Ints, Integer*))>
+<!ELEMENT Ints EMPTY>
+
+<!ELEMENT Arg ((Arg, Ident)?)>
+
+<!ELEMENT Exp ((Cons, Exp, Exp) | (App, Ident, Exp*) | (Var, Ident) | (LitInt, Integer) | (LitChar, Char) | (LitString, String) | (LitDouble, Double) | (List, Exp*))>
+<!ELEMENT Cons EMPTY>
+<!ELEMENT App EMPTY>
+<!ELEMENT Var EMPTY>
+<!ELEMENT LitInt EMPTY>
+<!ELEMENT LitChar EMPTY>
+<!ELEMENT LitString EMPTY>
+<!ELEMENT LitDouble EMPTY>
+<!ELEMENT List EMPTY>
+
+<!ELEMENT RHS ((RHS, Item*)?)>
+
+<!ELEMENT MinimumSize ((MNonempty) | (MEmpty))>
+<!ELEMENT MNonempty EMPTY>
+<!ELEMENT MEmpty EMPTY>
+
+<!ELEMENT Reg ((RSeq, Reg, Reg) | (RAlt, Reg, Reg) | (RMinus, Reg, Reg) | (RStar, Reg) | (RPlus, Reg) | (ROpt, Reg) | (REps) | (RChar, Char) | (RAlts, String) | (RSeqs, String) | (RDigit) | (RLetter) | (RUpper) | (RLower) | (RAny))>
+<!ELEMENT RSeq EMPTY>
+<!ELEMENT RAlt EMPTY>
+<!ELEMENT RMinus EMPTY>
+<!ELEMENT RStar EMPTY>
+<!ELEMENT RPlus EMPTY>
+<!ELEMENT ROpt EMPTY>
+<!ELEMENT REps EMPTY>
+<!ELEMENT RChar EMPTY>
+<!ELEMENT RAlts EMPTY>
+<!ELEMENT RSeqs EMPTY>
+<!ELEMENT RDigit EMPTY>
+<!ELEMENT RLetter EMPTY>
+<!ELEMENT RUpper EMPTY>
+<!ELEMENT RLower EMPTY>
+<!ELEMENT RAny EMPTY>

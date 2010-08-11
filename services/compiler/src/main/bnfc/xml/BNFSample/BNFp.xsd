@@ -1,0 +1,518 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified">
+  <xs:element name="Integer">
+    <xs:complexType>
+      <xs:attribute name="value" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Double">
+    <xs:complexType>
+      <xs:attribute name="value" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="String">
+    <xs:complexType>
+      <xs:attribute name="value" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Ident">
+    <xs:complexType>
+      <xs:attribute name="value" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Char">
+    <xs:complexType>
+      <xs:attribute name="value" use="required"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="LGrammar">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="LGr"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="LDef"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="LGr">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="LDef">
+    <xs:complexType>
+      <xs:choice>
+        <xs:sequence>
+          <xs:element ref="DefAll"/>
+          <xs:element ref="Def"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="DefSome"/>
+          <xs:element maxOccurs="unbounded" ref="Ident"/>
+          <xs:element ref="Def"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="LDefView"/>
+          <xs:element maxOccurs="unbounded" ref="Ident"/>
+        </xs:sequence>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="DefAll">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="DefSome">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="LDefView">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="Grammar">
+    <xs:complexType>
+      <xs:sequence minOccurs="0">
+        <xs:element ref="Grammar"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="Def"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Def">
+    <xs:complexType>
+      <xs:choice>
+        <xs:sequence>
+          <xs:element ref="Rule"/>
+          <xs:element ref="Label"/>
+          <xs:element ref="Cat"/>
+          <xs:element minOccurs="0" maxOccurs="unbounded" ref="Item"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="Comment"/>
+          <xs:element ref="String"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="Comments"/>
+          <xs:element ref="String"/>
+          <xs:element ref="String"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="Internal"/>
+          <xs:element ref="Label"/>
+          <xs:element ref="Cat"/>
+          <xs:element minOccurs="0" maxOccurs="unbounded" ref="Item"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="Token"/>
+          <xs:element ref="Ident"/>
+          <xs:element ref="Reg"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="PosToken"/>
+          <xs:element ref="Ident"/>
+          <xs:element ref="Reg"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="Entryp"/>
+          <xs:element maxOccurs="unbounded" ref="Ident"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="Separator"/>
+          <xs:element ref="MinimumSize"/>
+          <xs:element ref="Cat"/>
+          <xs:element ref="String"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="Terminator"/>
+          <xs:element ref="MinimumSize"/>
+          <xs:element ref="Cat"/>
+          <xs:element ref="String"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="Coercions"/>
+          <xs:element ref="Ident"/>
+          <xs:element ref="Integer"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="Rules"/>
+          <xs:element ref="Ident"/>
+          <xs:element maxOccurs="unbounded" ref="RHS"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="Function"/>
+          <xs:element ref="Ident"/>
+          <xs:element minOccurs="0" maxOccurs="unbounded" ref="Arg"/>
+          <xs:element ref="Exp"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="Layout"/>
+          <xs:element maxOccurs="unbounded" ref="String"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="LayoutStop"/>
+          <xs:element maxOccurs="unbounded" ref="String"/>
+        </xs:sequence>
+        <xs:element ref="LayoutTop"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Rule">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="Comment">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="Comments">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="Internal">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="Token">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="PosToken">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="Entryp">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="Separator">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="Terminator">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="Coercions">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="Rules">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="Function">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="Layout">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="LayoutStop">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="LayoutTop">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="Item">
+    <xs:complexType>
+      <xs:choice>
+        <xs:sequence>
+          <xs:element ref="Terminal"/>
+          <xs:element ref="String"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="NTerminal"/>
+          <xs:element ref="Cat"/>
+        </xs:sequence>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Terminal">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="NTerminal">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="Cat">
+    <xs:complexType>
+      <xs:choice>
+        <xs:sequence>
+          <xs:element ref="ListCat"/>
+          <xs:element ref="Cat"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="IdCat"/>
+          <xs:element ref="Ident"/>
+        </xs:sequence>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ListCat">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="IdCat">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="Label">
+    <xs:complexType>
+      <xs:choice>
+        <xs:sequence>
+          <xs:element ref="LabNoP"/>
+          <xs:element ref="LabelId"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="LabP"/>
+          <xs:element ref="LabelId"/>
+          <xs:element maxOccurs="unbounded" ref="ProfItem"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="LabPF"/>
+          <xs:element ref="LabelId"/>
+          <xs:element ref="LabelId"/>
+          <xs:element maxOccurs="unbounded" ref="ProfItem"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="LabF"/>
+          <xs:element ref="LabelId"/>
+          <xs:element ref="LabelId"/>
+        </xs:sequence>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="LabNoP">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="LabP">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="LabPF">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="LabF">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="LabelId">
+    <xs:complexType>
+      <xs:choice>
+        <xs:sequence>
+          <xs:element ref="Id"/>
+          <xs:element ref="Ident"/>
+        </xs:sequence>
+        <xs:element ref="Wild"/>
+        <xs:element ref="ListE"/>
+        <xs:element ref="ListCons"/>
+        <xs:element ref="ListOne"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Id">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="Wild">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="ListE">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="ListCons">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="ListOne">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="ProfItem">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="ProfIt"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="IntList"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="Integer"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ProfIt">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="IntList">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element ref="Ints"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="Integer"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Ints">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="Arg">
+    <xs:complexType>
+      <xs:sequence minOccurs="0">
+        <xs:element ref="Arg"/>
+        <xs:element ref="Ident"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Exp">
+    <xs:complexType>
+      <xs:choice>
+        <xs:sequence>
+          <xs:element ref="Cons"/>
+          <xs:element ref="Exp"/>
+          <xs:element ref="Exp"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="App"/>
+          <xs:element ref="Ident"/>
+          <xs:element minOccurs="0" maxOccurs="unbounded" ref="Exp"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="Var"/>
+          <xs:element ref="Ident"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="LitInt"/>
+          <xs:element ref="Integer"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="LitChar"/>
+          <xs:element ref="Char"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="LitString"/>
+          <xs:element ref="String"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="LitDouble"/>
+          <xs:element ref="Double"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="List"/>
+          <xs:element minOccurs="0" maxOccurs="unbounded" ref="Exp"/>
+        </xs:sequence>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="Cons">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="App">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="Var">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="LitInt">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="LitChar">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="LitString">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="LitDouble">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="List">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="RHS">
+    <xs:complexType>
+      <xs:sequence minOccurs="0">
+        <xs:element ref="RHS"/>
+        <xs:element minOccurs="0" maxOccurs="unbounded" ref="Item"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="MinimumSize">
+    <xs:complexType>
+      <xs:choice>
+        <xs:element ref="MNonempty"/>
+        <xs:element ref="MEmpty"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="MNonempty">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="MEmpty">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="Reg">
+    <xs:complexType>
+      <xs:choice>
+        <xs:sequence>
+          <xs:element ref="RSeq"/>
+          <xs:element ref="Reg"/>
+          <xs:element ref="Reg"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="RAlt"/>
+          <xs:element ref="Reg"/>
+          <xs:element ref="Reg"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="RMinus"/>
+          <xs:element ref="Reg"/>
+          <xs:element ref="Reg"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="RStar"/>
+          <xs:element ref="Reg"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="RPlus"/>
+          <xs:element ref="Reg"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="ROpt"/>
+          <xs:element ref="Reg"/>
+        </xs:sequence>
+        <xs:element ref="REps"/>
+        <xs:sequence>
+          <xs:element ref="RChar"/>
+          <xs:element ref="Char"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="RAlts"/>
+          <xs:element ref="String"/>
+        </xs:sequence>
+        <xs:sequence>
+          <xs:element ref="RSeqs"/>
+          <xs:element ref="String"/>
+        </xs:sequence>
+        <xs:element ref="RDigit"/>
+        <xs:element ref="RLetter"/>
+        <xs:element ref="RUpper"/>
+        <xs:element ref="RLower"/>
+        <xs:element ref="RAny"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="RSeq">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="RAlt">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="RMinus">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="RStar">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="RPlus">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="ROpt">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="REps">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="RChar">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="RAlts">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="RSeqs">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="RDigit">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="RLetter">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="RUpper">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="RLower">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="RAny">
+    <xs:complexType/>
+  </xs:element>
+</xs:schema>
