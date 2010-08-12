@@ -42,6 +42,8 @@ trait Desdemona {
 	"javax.persistence.GeneratedValue",	
 	"javax.persistence.Inheritance",	
 	"javax.persistence.InheritanceType",	
+	"javax.persistence.DiscriminatorColumn",	
+	"javax.persistence.DiscriminatorValue",	
 	"org.hibernate.annotations.GenericGenerator",
 	"java.util.Date",
 	"java.util.HashSet",
@@ -116,35 +118,35 @@ trait Desdemona {
       typ : ClassOrInterfaceDeclaration,
       member : FieldDeclaration
       ) : Type = {
-	val ftypName =
-	  member.getType match {
-	    case rType : ReferenceType => {
-	      rType.getType.asInstanceOf[ClassOrInterfaceType].getName
-	    }
-	    case cOIType : ClassOrInterfaceType => {
-	      cOIType.getName
-	    }
-	    case _ => {
-	      throw new Exception( "class type not yet handled" )
-	    }
-	  };
+// 	val ftypName =
+// 	  member.getType match {
+// 	    case rType : ReferenceType => {
+// 	      rType.getType.asInstanceOf[ClassOrInterfaceType].getName
+// 	    }
+// 	    case cOIType : ClassOrInterfaceType => {
+// 	      cOIType.getName
+// 	    }
+// 	    case _ => {
+// 	      throw new Exception( "class type not yet handled" )
+// 	    }
+// 	  };
 		 
-	if ( (ftypName.length > 4)
-	    && (ftypName.substring( 0, 4 ) == "List") ) {
-	      val theTypeParamStr : String =
-		ftypName.substring( 4, ftypName.length );
-	      val theTypeParamType : ClassOrInterfaceType =
-		new ClassOrInterfaceType( theTypeParamStr );
-	      val theType : ClassOrInterfaceType =
-		new ClassOrInterfaceType( "List" );
-	      theType.setTypeArgs( new java.util.LinkedList[Type]() );
-	      theType.getTypeArgs.add( theTypeParamType  )
-	      theType
-	    }
-	else {
+// 	if ( (ftypName.length > 4)
+// 	    && (ftypName.substring( 0, 4 ) == "List") ) {
+// 	      val theTypeParamStr : String =
+// 		ftypName.substring( 4, ftypName.length );
+// 	      val theTypeParamType : ClassOrInterfaceType =
+// 		new ClassOrInterfaceType( theTypeParamStr );
+// 	      val theType : ClassOrInterfaceType =
+// 		new ClassOrInterfaceType( "List" );
+// 	      theType.setTypeArgs( new java.util.LinkedList[Type]() );
+// 	      theType.getTypeArgs.add( theTypeParamType  )
+// 	      theType
+// 	    }
+// 	else {
 	  // BUGBUG lgm should make copy
 	  member.getType
-	}
+//	}
       }
     def trgtRenderMethodName : String = "render"
 
@@ -495,7 +497,7 @@ trait Desdemona {
 	    "strategy", 
 	    new NameExpr(
 	      //"InheritanceType.TABLE_PER_CLASS"
-	      "InheritanceType.JOINED_TABLE"
+	      "InheritanceType.JOINED"
 	    )
 	  )
 	);

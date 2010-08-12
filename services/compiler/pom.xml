@@ -35,6 +35,25 @@
       <snapshots/>
     </repository>
     <repository>
+      <id>jboss-public-repository-group</id>
+      <name>JBoss Public Maven Repository Group</name>
+      <url>https://repository.jboss.org/nexus/content/groups/public-jboss/</url>
+      <layout>default</layout>
+      <releases>
+	<enabled>true</enabled>
+	<updatePolicy>never</updatePolicy>
+      </releases>
+      <snapshots>
+	<enabled>true</enabled>
+	<updatePolicy>never</updatePolicy>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>mojo.codehaus.org</id>
+      <name>Codehaus-Mojo</name>
+      <url>http://repository.codehaus.org/org/codehaus/mojo</url>
+    </repository>    
+    <repository>
       <id>biosim</id>
       <url>http://biosimrepomirror.googlecode.com/svn/trunk</url>
     </repository>     
@@ -45,6 +64,20 @@
       <id>scala-tools.releases</id>
       <name>Scala-Tools Plugins Repository for Releases</name>
       <url>http://scala-tools.org/repo-releases</url>
+    </pluginRepository>
+    <pluginRepository>
+      <id>jboss-public-repository-group</id>
+      <name>JBoss Public Maven Repository Group</name>
+      <url>https://repository.jboss.org/nexus/content/groups/public-jboss/</url>
+      <layout>default</layout>
+      <releases>
+	<enabled>true</enabled>
+	<updatePolicy>never</updatePolicy>
+      </releases>
+      <snapshots>
+	<enabled>true</enabled>
+	<updatePolicy>never</updatePolicy>
+      </snapshots>
     </pluginRepository>
   </pluginRepositories>
 
@@ -169,17 +202,20 @@
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-core</artifactId>
-      <version>3.3.1.GA</version>
+      <!-- version>3.3.1.GA</version -->
+      <version>3.5.4-Final</version>
     </dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-annotations</artifactId>
-      <version>3.4.0.GA</version>
+      <!-- version>3.4.0.GA</version -->
+      <version>3.5.4-Final</version>
     </dependency>
     <dependency>
       <groupId>org.hibernate</groupId>
       <artifactId>hibernate-entitymanager</artifactId>
-      <version>3.4.0.GA</version>
+      <!-- version>3.4.0.GA</version -->
+      <version>3.5.4-Final</version>
       <exclusions>
 	<exclusion>
 	  <groupId>javax.transaction</groupId>
@@ -392,28 +428,28 @@
               <goal>run</goal>
             </goals>
           </execution>
-	  <!-- <execution> -->
-<!-- 	    <id>bnfc-persistence</id> -->
-<!-- 	    <phase>process-classes</phase> -->
-<!-- 	    <configuration> -->
-<!-- 	      <tasks> -->
-<!-- 		<property name="base.dir" value="${basedir}"/> -->
-<!-- 		<property name="target.dir" value="${basedir}/target"/> -->
-<!-- 		<property name="scala.dir" value="${basedir}/src/main/scala"/> -->
-<!-- 		<property name="bnfc.dir" value="${basedir}/src/main/bnfc"/> -->
-<!-- 		<property name="bnfc.package" value="${groupId}"/> -->
-<!-- 		<property name="bnfc.artifact" value="${artifactId}"/> -->
-<!-- 		<property name="compile_classpath" -->
-<!-- 			  refid="maven.compile.classpath"/> -->
-<!--                 <ant antfile="${basedir}/src/main/bnfc/build.xml"> -->
-<!--                   <target name="bnfc-generate-persistence"/> -->
-<!--                 </ant> -->
-<!--               </tasks> -->
-<!--             </configuration> -->
-<!--             <goals> -->
-<!--               <goal>run</goal> -->
-<!--             </goals> -->
-<!--           </execution> -->
+	  <execution>
+	    <id>bnfc-persistence</id>
+	    <phase>process-classes</phase>
+	    <configuration>
+	      <tasks>
+		<property name="base.dir" value="${basedir}"/>
+		<property name="target.dir" value="${basedir}/target"/>
+		<property name="scala.dir" value="${basedir}/src/main/scala"/>
+		<property name="bnfc.dir" value="${basedir}/src/main/bnfc"/>
+		<property name="bnfc.package" value="${groupId}"/>
+		<property name="bnfc.artifact" value="${artifactId}"/>
+		<property name="compile_classpath"
+			  refid="maven.compile.classpath"/>
+                <ant antfile="${basedir}/src/main/bnfc/build.xml">
+                  <target name="bnfc-generate-persistence"/>
+                </ant>
+              </tasks>
+            </configuration>
+            <goals>
+              <goal>run</goal>
+            </goals>
+          </execution>
 	  <execution>
 	    <id>bnfc-doc</id>
 	    <phase>generate-resources</phase>
@@ -496,12 +532,12 @@
 	  <target>1.6</target>
 	  <compilerArgument>-proc:none</compilerArgument>
 	</configuration>
-	<executions>
-	  <execution>
-	    <id>run-annotation-processors-only</id>
-	    <phase>process-sources</phase>
-	    <configuration>
-	      <compilerArgument>-proc:only</compilerArgument>
+<!-- 	<executions> -->
+<!-- 	  <execution> -->
+<!-- 	    <id>run-annotation-processors-only</id> -->
+<!-- 	    <phase>process-sources</phase> -->
+<!-- 	    <configuration> -->
+<!-- 	      <compilerArgument>-proc:only</compilerArgument> -->
 	      <!-- If your app has multiple packages, use this include filter to
 		   execute the processor only on the package containing your entities -->
 	      <!--
@@ -509,38 +545,41 @@
 		  <include>**/model/*.java</include>
 		  </includes>
 	      -->
-	    </configuration>
-	    <goals>
-	      <goal>compile</goal>
-	    </goals>
-	  </execution>
-	</executions>  
-      </plugin>         
+<!-- 	    </configuration> -->
+<!-- 	    <goals> -->
+<!-- 	      <goal>compile</goal> -->
+<!-- 	    </goals> -->
+<!-- 	  </execution> -->
+<!-- 	</executions>   -->
+       </plugin>
       <!-- Build helper plugin adds the sources generated by the JPA 2 annotation processor to the compile path -->
-      <plugin>
-	<groupId>org.codehaus.mojo</groupId>
-	<artifactId>build-helper-maven-plugin</artifactId>
-	<version>1.5</version>
-	<executions>      
-	  <execution> 
-	    <phase>process-sources</phase>
-	    <configuration>
-	      <sources>
-		<source>${project.build.directory}/generated-sources/annotations</source>
-	      </sources>
-	    </configuration>
-	    <goals>
-	      <goal>add-source</goal>
-	    </goals>
-	  </execution>
-	</executions>
-      </plugin>
+<!--       <plugin> -->
+<!-- 	<groupId>org.codehaus.mojo</groupId> -->
+<!-- 	<artifactId>build-helper-maven-plugin</artifactId> -->
+<!-- 	<version>1.5</version> -->
+<!-- 	<executions>       -->
+<!-- 	  <execution>  -->
+<!-- 	    <phase>process-sources</phase> -->
+<!-- 	    <configuration> -->
+<!-- 	      <sources> -->
+<!-- 		<source>${project.build.directory}/generated-sources/annotations</source> -->
+<!-- 	      </sources> -->
+<!-- 	    </configuration> -->
+<!-- 	    <goals> -->
+<!-- 	      <goal>add-source</goal> -->
+<!-- 	    </goals> -->
+<!-- 	  </execution> -->
+<!-- 	</executions> -->
+<!--       </plugin> -->
 
       <plugin>
 	<groupId>org.codehaus.mojo</groupId>
+	<!-- groupId>org.hibernate</groupId -->
 	<artifactId>hibernate3-maven-plugin</artifactId>
+	<!-- artifactId>hibernate-maven-plugin</artifactId -->
 	<!-- version>2.0-alpha-2</version -->
 	<version>2.2</version>
+	<!-- version>3.5.0.Beta-1</version -->
 	<executions>
 	  <execution>
 	    <phase>process-classes</phase>
@@ -556,6 +595,12 @@
 	  <components>
 	    <component>
 	      <name>hbm2ddl</name>
+	      <implementation>annotationconfiguration</implementation>
+	    </component>
+	  </components>
+	  <components>
+	    <component>
+	      <name>hbm2hbmxl</name>
 	      <implementation>annotationconfiguration</implementation>
 	    </component>
 	  </components>
