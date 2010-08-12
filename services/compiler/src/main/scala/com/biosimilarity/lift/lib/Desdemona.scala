@@ -43,6 +43,7 @@ trait Desdemona {
 	"javax.persistence.Inheritance",	
 	"javax.persistence.InheritanceType",	
 	"javax.persistence.DiscriminatorColumn",	
+	"javax.persistence.DiscriminatorType",	
 	"javax.persistence.DiscriminatorValue",	
 	"org.hibernate.annotations.GenericGenerator",
 	"java.util.Date",
@@ -497,11 +498,42 @@ trait Desdemona {
 	    "strategy", 
 	    new NameExpr(
 	      //"InheritanceType.TABLE_PER_CLASS"
-	      "InheritanceType.JOINED"
+	      //"InheritanceType.JOINED"
+	      "InheritanceType.SINGLE_TABLE"
 	    )
 	  )
 	);
 	typ.getAnnotations.add( inheritanceAnnotationDecl );
+
+	val discriminatorColumnAnnotationDecl : NormalAnnotationExpr =
+	  new NormalAnnotationExpr(
+	    ASTHelper.createNameExpr( "DiscriminatorColumn" ),
+	    new java.util.LinkedList[MemberValuePair]()
+	  );	
+	discriminatorColumnAnnotationDecl.getPairs().add(
+	  new MemberValuePair(
+	    "name", 
+	    new StringLiteralExpr(
+	      resourceModelName + "Discriminator"
+	    )
+	  )	  
+	);
+	discriminatorColumnAnnotationDecl.getPairs().add(
+	  new MemberValuePair(
+	    "discriminatorType", 
+	    new NameExpr(
+	      "DiscriminatorType.STRING"
+	    )
+	  )
+	);
+	typ.getAnnotations.add( discriminatorColumnAnnotationDecl );
+
+	val discriminatorValueAnnotationDecl : SingleMemberAnnotationExpr =
+	  new SingleMemberAnnotationExpr(
+	    ASTHelper.createNameExpr( "DiscriminatorValue" ),
+	    new StringLiteralExpr( resourceModelName )
+	  )
+	typ.getAnnotations.add( discriminatorValueAnnotationDecl );
 	
 	val tableAnnotationDecl : NormalAnnotationExpr =
 	  new NormalAnnotationExpr(
@@ -557,21 +589,21 @@ trait Desdemona {
 	    ASTHelper.createNameExpr( "Entity" )
 	  )
 	);
-	val inheritanceAnnotationDecl : NormalAnnotationExpr =
-	  new NormalAnnotationExpr(
-	    ASTHelper.createNameExpr( "Inheritance" ),
-	    new java.util.LinkedList[MemberValuePair]()
-	  );
-	inheritanceAnnotationDecl.getPairs().add(
-	  new MemberValuePair(
-	    "strategy", 
-	    new NameExpr(
-	      "InheritanceType.TABLE_PER_CLASS"
-	    )
-	  )
-	);
+	// val inheritanceAnnotationDecl : NormalAnnotationExpr =
+// 	  new NormalAnnotationExpr(
+// 	    ASTHelper.createNameExpr( "Inheritance" ),
+// 	    new java.util.LinkedList[MemberValuePair]()
+// 	  );
+// 	inheritanceAnnotationDecl.getPairs().add(
+// 	  new MemberValuePair(
+// 	    "strategy", 
+// 	    new NameExpr(
+// 	      "InheritanceType.TABLE_PER_CLASS"
+// 	    )
+// 	  )
+// 	);
 
-	typ.getAnnotations.add( inheritanceAnnotationDecl );
+// 	typ.getAnnotations.add( inheritanceAnnotationDecl );
 
 	addIdField( cUnit, typ, "String", "Super" );
 
