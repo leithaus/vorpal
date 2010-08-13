@@ -22,8 +22,8 @@ class REPL {
   // parsing
   def lexer (str : String) = new Yylex( new StringReader( str ) )
   def parser (str : String) = new parser( lexer( str ) )
-  //def clientRequestParseTree (str : String) = (parser( str )).pLGrammar()
-  def clientRequestParseTree (str : String) = (parser( str )).pExpression()
+  def clientRequestParseTree (str : String) = (parser( str )).pLGrammar()
+  //def clientRequestParseTree (str : String) = (parser( str )).pExpression()
   def read (str : String) = clientRequestParseTree(str)  
 
   // compilation    

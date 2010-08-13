@@ -54,6 +54,11 @@
       <url>http://repository.codehaus.org/org/codehaus/mojo</url>
     </repository>    
     <repository>
+     <id>dbis-ukn</id>
+     <name>DBIS Maven Repository</name>
+     <url>http://www.inf.uni-konstanz.de/dbis/basex/maven</url>
+   </repository>
+    <repository>
       <id>biosim</id>
       <url>http://biosimrepomirror.googlecode.com/svn/trunk</url>
     </repository>     
@@ -235,6 +240,17 @@
       <version>5.1.6</version>
     </dependency> 
     
+    <dependency>
+      <groupId>org.basex</groupId>
+      <artifactId>basex</artifactId>
+      <version>6.2.4</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.basex</groupId>
+      <artifactId>basex-api</artifactId>
+      <version>6.2.4</version>
+    </dependency>    
   </dependencies>
 
   <build>

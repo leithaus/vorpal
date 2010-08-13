@@ -43,20 +43,20 @@ NTerminal . Item ::= Cat ;
 
 -- Categories
 ListCat  . Cat ::= "[" Cat "]" ;
-IdCat    . Cat ::= Ident ;
+EyeDCat    . Cat ::= Ident ;
 
 -- labels with or without profiles
-LabNoP   . Label ::= LabelId ;
-LabP     . Label ::= LabelId [ProfItem] ;
-LabPF    . Label ::= LabelId LabelId [ProfItem] ;
-LabF     . Label ::= LabelId LabelId ;
+LabNoP   . Label ::= LabelEyeD ;
+LabP     . Label ::= LabelEyeD [ProfItem] ;
+LabPF    . Label ::= LabelEyeD LabelEyeD [ProfItem] ;
+LabF     . Label ::= LabelEyeD LabelEyeD ;
 
 -- functional labels
-Id       . LabelId ::= Ident ; 
-Wild     . LabelId ::= "_" ; 
-ListE    . LabelId ::= "[" "]" ;
-ListCons . LabelId ::= "(" ":" ")" ; 
-ListOne  . LabelId ::= "(" ":" "[" "]" ")" ;
+EyeD       . LabelEyeD ::= Ident ; 
+Wild     . LabelEyeD ::= "_" ; 
+ListE    . LabelEyeD ::= "[" "]" ;
+ListCons . LabelEyeD ::= "(" ":" ")" ; 
+ListOne  . LabelEyeD ::= "(" ":" "[" "]" ")" ;
 
 -- profiles (= permutation and binding patterns)
 ProfIt   . ProfItem ::= "(" "[" [IntList] "]" "," "[" [Integer] "]" ")" ;

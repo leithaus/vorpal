@@ -589,52 +589,38 @@ trait Desdemona {
 	    ASTHelper.createNameExpr( "Entity" )
 	  )
 	);
-	// val inheritanceAnnotationDecl : NormalAnnotationExpr =
-// 	  new NormalAnnotationExpr(
-// 	    ASTHelper.createNameExpr( "Inheritance" ),
-// 	    new java.util.LinkedList[MemberValuePair]()
-// 	  );
-// 	inheritanceAnnotationDecl.getPairs().add(
-// 	  new MemberValuePair(
-// 	    "strategy", 
-// 	    new NameExpr(
-// 	      "InheritanceType.TABLE_PER_CLASS"
-// 	    )
-// 	  )
-// 	);
+	val discriminatorColumnAnnotationDecl : NormalAnnotationExpr =
+	  new NormalAnnotationExpr(
+	    ASTHelper.createNameExpr( "DiscriminatorColumn" ),
+	    new java.util.LinkedList[MemberValuePair]()
+	  );	
+	discriminatorColumnAnnotationDecl.getPairs().add(
+	  new MemberValuePair(
+	    "name", 
+	    new StringLiteralExpr(
+	      resourceModelName + "Discriminator"
+	    )
+	  )	  
+	);
+	discriminatorColumnAnnotationDecl.getPairs().add(
+	  new MemberValuePair(
+	    "discriminatorType", 
+	    new NameExpr(
+	      "DiscriminatorType.STRING"
+	    )
+	  )
+	);
+	typ.getAnnotations.add( discriminatorColumnAnnotationDecl );
 
-// 	typ.getAnnotations.add( inheritanceAnnotationDecl );
+	val discriminatorValueAnnotationDecl : SingleMemberAnnotationExpr =
+	  new SingleMemberAnnotationExpr(
+	    ASTHelper.createNameExpr( "DiscriminatorValue" ),
+	    new StringLiteralExpr( resourceModelName )
+	  )
+	typ.getAnnotations.add( discriminatorValueAnnotationDecl );
 
 	addIdField( cUnit, typ, "String", "Super" );
 
-	// idField.getAnnotations.add(
-// 	  new MarkerAnnotationExpr(
-// 	    ASTHelper.createNameExpr( "GeneratedValue" )
-// 	  )
-// 	)
-// 	val generatorAnnotationDecl : NormalAnnotationExpr =
-// 	  new NormalAnnotationExpr(
-// 	    ASTHelper.createNameExpr( "GenericGenerator" ),
-// 	    new java.util.LinkedList[MemberValuePair]()
-// 	  );
-// 	generatorAnnotationDecl.getPairs().add(
-// 	  new MemberValuePair(
-// 	    "name", 
-// 	    new StringLiteralExpr( "hibernate-uuid" )
-// 	  )
-// 	);
-// 	generatorAnnotationDecl.getPairs().add(
-// 	  new MemberValuePair(
-// 	    "strategy", 
-// 	    new StringLiteralExpr( "uuid" )
-// 	  )
-// 	);
-// 	idField.getAnnotations.add( 
-// 	  generatorAnnotationDecl
-// 	);
-
-	//ASTHelper.addMember(typ, idField);
-	
       }
 
       correctMemberPackageReferences( typ );
@@ -667,56 +653,6 @@ trait Desdemona {
       typ : ClassOrInterfaceDeclaration
     )
     : CompilationUnit = {
-      // def getFirstId( fd : FieldDeclaration ) : VariableDeclaratorId = {
-// 	(scala.collection.jcl.Conversions.convertList(
-// 	  fd.getVariables
-// 	  ))( 0 ).getId
-//       }
-//       def getIds( fd : FieldDeclaration ) : Seq[VariableDeclaratorId] = {
-// 	(scala.collection.jcl.Conversions.convertList(
-// 	  fd.getVariables
-// 	  )).map( { ( v : VariableDeclarator ) => v.getId } )
-//       }
-
-//       val ctor : ConstructorDeclaration =
-// 	new ConstructorDeclaration( 
-// 	  ModifierSet.PUBLIC,
-// 	  //trgtResourceClassName
-// 	  typ.getName
-// 	);
-
-//       val block : BlockStmt = new BlockStmt();
-//       val callModel : ExplicitConstructorInvocationStmt =	      
-// 	new ExplicitConstructorInvocationStmt(
-// 	  false,
-// 	  null,
-// 	  new java.util.LinkedList[Expression]()
-// 	);      
-//       ASTHelper.addStmt( block, callModel );      
-      
-//       ctor.setParameters( new java.util.LinkedList[Parameter]() )
-//       for (
-// 	fieldDecl <- getContainedFields;
-// 	mparams =
-// 	  getIds( fieldDecl ).map({ ( id : VariableDeclaratorId ) =>
-// 	    new Parameter(
-// 	      fieldDecl.getType,
-// 	      id
-// 	    )
-// 	  })
-//       )
-// 	yield {
-// 	  mparams.map( { ( mparam : Parameter ) => {
-// 	    ctor.getParameters.add( mparam );
-// 	    callModel.getArgs.add(
-// 	      new NameExpr( mparam.getId.toString )
-// 	    )
-// 	  } 
-// 	 })
-// 	};
-
-//       ASTHelper.addMember( typ, ctor );
-//       ctor.setBlock( block );
       cUnit
     }
 
@@ -826,7 +762,8 @@ trait Desdemona {
 	val columnType : String = calculateColumnType( fieldDecl );	
 	var columnAnnotation : AnnotationExpr = null ;
 
-	if ( columnType == "JoinColumn" ) {
+	if (( columnType == "JoinColumn" )
+	    && (!isCollectionColumn)){
 	  columnAnnotation =
 	    new MarkerAnnotationExpr(
 	      ASTHelper.createNameExpr( columnType )
@@ -835,44 +772,8 @@ trait Desdemona {
 	    new MarkerAnnotationExpr(
 	      ASTHelper.createNameExpr( "OneToOne" )
 	    );
-	  // val oneToOneAnnotation : NormalAnnotationExpr =
-	  // 	    new NormalAnnotationExpr(
-	  // 	      ASTHelper.createNameExpr( "OneToOne" ),
-	  // 	      new java.util.LinkedList[MemberValuePair]()
-	  // 	    );
-	  // 	  val cascadeType : ArrayInitializerExpr =
-	  // 	    new ArrayInitializerExpr(
-	  // 	      new java.util.LinkedList[Expression]()
-	  // 	    );
-	  // 	  cascadeType.getValues().add( 
-	  // 	    new FieldAccessExpr(
-	  // 	      new NameExpr( "CascadeType" ),
-	  // 	      "ALL"
-	  // 	    )
-	  // 	  );
-	  // 	  oneToOneAnnotation.getPairs().add(
-	  // 	    new MemberValuePair(
-	  // 	      "cascade",
-	  // 	      cascadeType
-	  // 	    )
-	  // 	  );
-	  // 	  oneToOneAnnotation.getPairs().add(
-	  // 	    new MemberValuePair(
-	  // 	      "fetch",
-	  // 	      new FieldAccessExpr(
-	  // 		new NameExpr( "FetchType" ),
-	  // 		"LAZY"
-	  // 	      )
-	  // 	    )
-	  // 	  )
-	  
-	  // val pKJColumnAnnotation =
-	  // 	    new MarkerAnnotationExpr(
-	  // 	      new NameExpr( "PrimaryKeyJoinColumn" )
-	  // 	    )
 	  
 	  annotations.add( oneToOneAnnotation );
-	  //annotations.add( pKJColumnAnnotation )
 	}
 	else {
 	  val cPairs = new java.util.LinkedList[MemberValuePair]();
@@ -914,25 +815,17 @@ trait Desdemona {
 		    )
 		  )
 		);
-		cPairs.add(
-		  new MemberValuePair(
-		    "mappedBy",
-		    new StringLiteralExpr(
-		      (trgtResourceClassName.substring( 0, 1 ).toLowerCase
-		       + trgtResourceClassName.substring(
-			 1,
-			 trgtResourceClassName.length ))
-		    )
-		  )
-		);
 		// cPairs.add(
-		// 		new MemberValuePair(
-		// 		  "targetEntity",
-		// 		  new NameExpr(
-		// 		    ftypName.substring( 4, ftypName.length ) + ".class"
-		// 		  )
-		// 		)
-		// 	      );
+// 		  new MemberValuePair(
+// 		    "mappedBy",
+// 		    new StringLiteralExpr(
+// 		      (trgtResourceClassName.substring( 0, 1 ).toLowerCase
+// 		       + trgtResourceClassName.substring(
+// 			 1,
+// 			 trgtResourceClassName.length ))
+// 		    )
+// 		  )
+// 		);
 	      }
 	  else {
 	    cPairs.add(
@@ -1009,11 +902,6 @@ trait Desdemona {
       
       val annotations = new java.util.LinkedList[AnnotationExpr]();
       if (isId) {
-	// annotations.add( 
-// 	  new MarkerAnnotationExpr(
-//  	    ASTHelper.createNameExpr( "Id" )
-//  	  )
-// 	);
 	addIdAnnotations( cUnit, typ, annotations, "String", "" );
       }
       val cPairs = new java.util.LinkedList[MemberValuePair]();
@@ -1093,9 +981,6 @@ trait Desdemona {
       cUnit : CompilationUnit,
       typ : ClassOrInterfaceDeclaration
     ) : CompilationUnit = {
-      //addAccessorMethod( "String", trgtUniqueIdFldName, false, cUnit, typ );
-      //addAccessorMethod( "String", trgtIdFldName, true, cUnit, typ );
-      
       cUnit
     }
 
@@ -1125,13 +1010,8 @@ trait Desdemona {
 
     def getContainedFields : Seq[FieldDeclaration] = {
       for (member <-
-	   //scala.collection.jcl.Conversions.convertList(
-	     srcCompilationUnit.getTypes.get(0).getMembers
-	   //)
-	   if (member.isInstanceOf[FieldDeclaration]
-		 //&& (ModifierSet.isPublic( member.getMembers ))
-		 //&& (ModifierSet.isFinal( member.getMembers ))
-	       ))
+	   srcCompilationUnit.getTypes.get(0).getMembers
+	   if (member.isInstanceOf[FieldDeclaration]))
       yield member.asInstanceOf[FieldDeclaration]
     }
 
@@ -1225,9 +1105,7 @@ trait Desdemona {
 	  ( acc : ClassOrInterfaceDeclaration,
 	    member : FieldDeclaration )
 	  => {
-	    //scala.collection.jcl.Conversions.convertList(
 	      member.getVariables
-	      //)
 	      .map( { 
 	      ( v : VariableDeclarator ) => {
 		addFieldAccessMethods( acc, member, v )
@@ -1382,12 +1260,9 @@ object theDesdemona extends Desdemona {
     if ( (args.length > 0) && (args.length % 2 == 0) ) {
       val argMap =
 	new scala.collection.mutable.HashMap[String,String]();      
-      //val range = (0 to ((args.length / 2) - 1) );
       for ( idx <- (0 to ((args.length / 2) - 1) ) /* .force */ )
       yield {
-	//println( "processing arg(" + idx + ")" )
 	val kv = Tuple( args( idx*2 ), args( idx*2 + 1 ) );
-	//println( "processing arg(" + idx + ")" )
 	argMap += kv
       };
       Some( argMap )
