@@ -45,11 +45,6 @@ trait ScriptActions {
   def arxivScript     = "bin/arxiv.sh"
 }
 
-trait Verbosity
-case class Terse() extends Verbosity
-case class Informative() extends Verbosity
-case class Blogger() extends Verbosity
-
 trait CmdStatus
 case class RCnMsg( ec : Int, s : String )
 extends CmdStatus

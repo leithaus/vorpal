@@ -19,7 +19,7 @@ import util._
 import Helpers._
 
 import com.biosimilarity.lift.model.{
-  Valet,VorpalValet,Verbosity,Blogger,CmdStatus,
+  Valet,VorpalValet,CmdStatus,
   DeliveryStatus,FileNStream,DeliveryFailure
 }
 

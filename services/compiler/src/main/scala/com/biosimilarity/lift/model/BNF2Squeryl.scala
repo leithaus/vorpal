@@ -9,6 +9,7 @@
 package com.biosimilarity.lift.model
 
 import com.biosimilarity.lift.lib.UUIDOps
+import com.biosimilarity.lift.lib.{Verbosity,Terse,Informative,Blogger}
 import com.biosimilarity.lift.model.vorpal._
 import Absyn._
 
@@ -63,15 +64,20 @@ trait SimpleUtilities {
 
   def splitFmlsFromTypes(
     fmlsTxt : String
-  ) : ( List[String], List[String] ) = {
-    val fmlsPairs =
-      for( fmlPair <- fmlsTxt.split( "," ) )
-      yield {
-	val a = fmlPair.split( ":" )
-	( a( 0 ).replace( " ", "" ), a( 1 ).replace( " ", "" ) )
+  ) : ( List[String], List[String] ) = {    
+    fmlsTxt match {
+      case "" => { ( List(), List() ) }
+      case _ => {
+	val fmlsPairs =
+	  for( fmlPair <- fmlsTxt.split( "," ) )
+	  yield {
+	    val a = fmlPair.split( ":" )
+	    ( a( 0 ).replace( " ", "" ), a( 1 ).replace( " ", "" ) )
+	  }
+	val ( fmls, fmlTyps ) = fmlsPairs.unzip
+	( fmls.toList, fmlTyps.toList )
       }
-    val ( fmls, fmlTyps ) = fmlsPairs.unzip
-    ( fmls.toList, fmlTyps.toList )
+    }
   }
   
   def commaSeparateStrings( ls : List[String] )
@@ -115,11 +121,16 @@ object SquerylCtxt {
 }
 
 class LBNF2SquerylCompiler(
-  val packageName : String
+  val packageName : String,
+  override val verbosity : Verbosity
 ) extends LBNF2SquerylXForm[Node,SquerylCtxt]
 with UUIDOps
-with SimpleUtilities {
+with SimpleUtilities
+with SimpleLogging {
   import scala.collection.JavaConversions._
+  def log : java.io.PrintWriter = {
+    new java.io.PrintWriter( System.out )
+  }
   def imports( ) : Node = {
     <source>
     import org.squeryl._
@@ -173,6 +184,7 @@ with SimpleUtilities {
   }
 
   def compileGrammar( grammar : LGrammar ) : Node = {
+    log( "compiling LGrammar" )
     grammar match {
       case lgr : LGr => {
 	<source>{ packageDecl() }
@@ -190,6 +202,7 @@ with SimpleUtilities {
     defn : LDef,
     ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
   ) : Node = {
+    log( "compiling LDef" )
     defn match {
       case defAll : DefAll => {
 	<source>{compileRule( defAll.def_, ctxt )}</source>
@@ -256,12 +269,36 @@ with SimpleUtilities {
 	    val lblId = labNoP.labeleyed_
 	    lblId match {
 	      case id : EyeD => id.ident_
+	      case lstCons : ListCons => {
+		"listCons"
+	      }
+	      case lstE : ListE => {
+		"listEmpty"
+	      }
+	      case listOne : ListOne => {
+		"listOne"
+	      }
+	      case wild : Wild => {
+		"wild"
+	      }
 	    }
 	  }	  
 	  case labP : LabP => {
 	    val lblId = labP.labeleyed_
 	    lblId match {
 	      case id : EyeD => id.ident_
+	      case lstCons : ListCons => {
+		"listCons"
+	      }
+	      case lstE : ListE => {
+		"listEmpty"
+	      }
+	      case listOne : ListOne => {
+		"listOne"
+	      }
+	      case wild : Wild => {
+		"wild"
+	      }
 	    }
 	  }
 	})
@@ -314,8 +351,10 @@ with SimpleUtilities {
     rdef : Def ,
     ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
   ) : Node = {
+    log( "compiling Def" )
     rdef match {
       case rule : Rule => {
+	log( "compiling Rule" )
 	if ( isCollectionRule( rule, ctxt ) ) {
 	  // Do it!
 	  <source>throw NYIException( "collection rule" )</source>
@@ -330,6 +369,11 @@ with SimpleUtilities {
 		val className = atomNTClassName( rule.label_, ctxt )
 		val varName = generateVarName()
 		val members = compileItemList( rule, ctxt )  
+
+		log( "rule label : " + className )
+		log( "fields : " + members._1.text )
+		log( "relations : " + members._2.text )
+
 		val catTrgt =
 		  <source>
 		  {
@@ -368,6 +412,48 @@ with SimpleUtilities {
 	    }
 	  lblTrgt
 	}
+      }
+      case rules : Rules => {
+	<source>Do me!</source>
+      }
+      case coercions : Coercions => {
+	<source>Do me!</source>
+      }
+      case comment : Absyn.Comment => {
+	<source>Do me!</source>
+      }
+      case comments : Absyn.Comments => {
+	<source>Do me!</source>
+      }
+      case entryp : Entryp => {
+	<source>Do me!</source>
+      }
+      case fn : Function => {
+	<source>Do me!</source>
+      }
+      case intern : Internal => {
+	<source>Do me!</source>
+      }
+      case layout : Layout => {
+	<source>Do me!</source>
+      }
+      case layoutStop : LayoutStop => {
+	<source>Do me!</source>
+      }
+      case layoutTop : LayoutTop => {
+	<source>Do me!</source>
+      }
+      case posTkn : PosToken => {
+	<source>Do me!</source>
+      }
+      case separator : Separator => {
+	<source>Do me!</source>
+      }
+      case terminator : Terminator => {
+	<source>Do me!</source>
+      }
+      case tkn : Token => {
+	<source>Do me!</source>
       }
     }
   }
@@ -563,13 +649,21 @@ trait ParseLBNFStream {
 }
 
 trait SimpleLogging {
+  def verbosity : Verbosity
   def log : java.io.PrintWriter
   def log( s : String ) : Unit = {
-    log.println( s )
+    verbosity match {
+      case Terse() => {}
+      case _ => {
+	log.println( s )
+	log.flush
+      }
+    }
   }
 }
 
-trait NodeIO extends SimpleLogging {
+trait NodeIO {
+  self : SimpleLogging =>
   def out : java.io.PrintWriter
   def myprintAll(nodes: Seq[Node]) {
     for (node <- nodes)
@@ -591,10 +685,11 @@ trait NodeIO extends SimpleLogging {
 
 class LBNFFile2SquerylCompiler(
   override val packageName    : String,
+  override val verbosity      : Verbosity,
   val          inputFileName  : String,
   val          outputFileName : String,
   val          logFileName    : String
-) extends LBNF2SquerylCompiler( packageName )
+) extends LBNF2SquerylCompiler( packageName, verbosity )
 with ParseLBNFStream
 with NodeIO {
   override lazy val in = new java.io.FileInputStream( inputFileName )
