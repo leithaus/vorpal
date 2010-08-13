@@ -30,7 +30,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 
 trait LBNF2SquerylXForm[Trgt,Ctxt[N,C,L,T]] {
-  def context( grammar : LGrammar ) : Ctxt[NTerminal,Cat,Label,Trgt]
+  def context( grammar : LGrammar )
+  : Ctxt[NTerminal,Cat,Label,Trgt]
+  def resetContext( grammar : LGrammar ) : Unit
   def compileGrammar( grammar : LGrammar ) : Trgt
 
   def compileDef(
@@ -42,35 +44,44 @@ trait LBNF2SquerylXForm[Trgt,Ctxt[N,C,L,T]] {
   def compileLabel(
     rule  : Rule , ctxt : Ctxt[NTerminal,Cat,Label,Trgt]
   ) : Trgt
+  def compileItemList( 
+    rule : Rule,
+    ctxt : Ctxt[NTerminal,Cat,Label,Node]
+  ) : ( Trgt, Trgt )
   def compileItem(
-    item : Item, ctxt : Ctxt[NTerminal,Cat,Label,Trgt]
+    item : Item,
+    ctxt : Ctxt[NTerminal,Cat,Label,Trgt]
   ) : Trgt
 }
 
-trait SimpleLogging {
-  def logStream : java.io.PrintWriter
-  def log( s : String ) = {
-    logStream.println( s )
+trait SimpleUtilities {
+  def splitFmlsFromTypes(
+    fmlsNode : Node
+  ) : ( List[String], List[String] ) = {
+    splitFmlsFromTypes( fmlsNode.text )    
   }
-}
 
-trait NodeIO extends SimpleLogging {
-  def out : java.io.PrintWriter
-  def myprintAll(nodes: Seq[Node]) {
-    for (node <- nodes)
-      myprint(node)
+  def splitFmlsFromTypes(
+    fmlsTxt : String
+  ) : ( List[String], List[String] ) = {
+    val fmlsPairs =
+      for( fmlPair <- fmlsTxt.split( "," ) )
+      yield {
+	val a = fmlPair.split( ":" )
+	( a( 0 ).replace( " ", "" ), a( 1 ).replace( " ", "" ) )
+      }
+    val ( fmls, fmlTyps ) = fmlsPairs.unzip
+    ( fmls.toList, fmlTyps.toList )
   }
   
-  def myprint(n: Node): Unit = n match {
-    case Text(s)          => out.print(s)
-    case EntityRef("lt")  => out.print('<')
-    case EntityRef("gt")  => out.print('>')
-    case EntityRef("amp") => out.print('&')
-    case atom: Atom[_]    => out.print(atom.text)
-    case elem: Elem       => myprintAll(elem.child)
-    case _                => log(
-      "error in xsd:run: encountered " + n.getClass() + " " + n.toString
-    )
+  def commaSeparateStrings( ls : List[String] )
+  : String = {
+    ls match {
+      case t :: ts => {
+	( t /: ts )( { ( acc, e ) => acc + " , " + e } )
+      }
+      case _ => ""
+    }
   }
 }
 
@@ -85,17 +96,19 @@ trait MapCtxt[N,C,L,T] {
 class SquerylCtxt[N,C,L,T](
   override val nonTerminalMap : Map[N,T],
   override val categoryMap    : Map[C,T],
-  override val labelMap       : Map[L,T]
+  override val labelMap       : Map[L,T],
+           val focus          : LGrammar
 ) extends MapCtxt[N,C,L,T]
 
 object SquerylCtxt {
   def unapply[N,C,L,T]( sqrlCtxt : SquerylCtxt[N,C,L,T] )
-  : Option[(Map[N,T],Map[C,T],Map[L,T])] = {
+  : Option[(Map[N,T],Map[C,T],Map[L,T],LGrammar)] = {
     Some(
       (
 	sqrlCtxt.nonTerminalMap,
 	sqrlCtxt.categoryMap,
-	sqrlCtxt.labelMap
+	sqrlCtxt.labelMap,
+	sqrlCtxt.focus
       )
     )
   }
@@ -104,20 +117,21 @@ object SquerylCtxt {
 class LBNF2SquerylCompiler(
   val packageName : String
 ) extends LBNF2SquerylXForm[Node,SquerylCtxt]
-with UUIDOps {
+with UUIDOps
+with SimpleUtilities {
   import scala.collection.JavaConversions._
   def imports( ) : Node = {
     <source>
-    <source>import org.squeryl._</source>
-    <source>import org.squeryl.customtypes.CustomTypesMode._</source>
-    <source>import org.squeryl.customtypes._</source>
-    <source>import org.squeryl.adapters.H2Adapter</source>
-    <source>import java.sql.{{SQLException, Connection => SQLConnection}}</source>
-    <source>import org.squeryl.dsl._</source>    
-    <source>import java.net.URI</source>
-    <source>import _root_.java.util.UUID</source>
-    <source>import java.sql.DatabaseMetaData</source>
-    <source>import java.sql.ResultSet</source>
+    import org.squeryl._
+    import org.squeryl.customtypes.CustomTypesMode._
+    import org.squeryl.customtypes._
+    import org.squeryl.adapters.H2Adapter
+    import java.sql.{{SQLException, Connection => SQLConnection}}
+    import org.squeryl.dsl._
+    import java.net.URI
+    import _root_.java.util.UUID
+    import java.sql.DatabaseMetaData
+    import java.sql.ResultSet
     </source>
   }
   def packageDecl() : Node = {
@@ -139,12 +153,23 @@ with UUIDOps {
 	  new SquerylCtxt[NTerminal,Cat,Label,Node](
 	    scala.collection.mutable.HashMap[NTerminal,Node](),
 	    scala.collection.mutable.HashMap[Cat,Node](),
-	    scala.collection.mutable.HashMap[Label,Node]()
+	    scala.collection.mutable.HashMap[Label,Node](),
+	    grammar
 	  )
 	_contexts( grammar ) = ctxt
 	ctxt
       }
     }
+  }
+
+  def resetContext( grammar : LGrammar ) : Unit = {      
+    _contexts( grammar ) =
+      new SquerylCtxt[NTerminal,Cat,Label,Node](
+	scala.collection.mutable.HashMap[NTerminal,Node](),
+	scala.collection.mutable.HashMap[Cat,Node](),
+	scala.collection.mutable.HashMap[Label,Node](),
+	grammar
+      )
   }
 
   def compileGrammar( grammar : LGrammar ) : Node = {
@@ -178,7 +203,6 @@ with UUIDOps {
     }    
   }
   
-  // Utility
   def isCollectionRule(
     rule : Rule,
     ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
@@ -227,7 +251,7 @@ with UUIDOps {
 	classNameFromNode( n )
       }
       case None => {
-	label match {
+	val ident = (label match {
 	  case labNoP : LabNoP => {
 	    val lblId = labNoP.labeleyed_
 	    lblId match {
@@ -240,7 +264,8 @@ with UUIDOps {
 	      case id : EyeD => id.ident_
 	    }
 	  }
-	}
+	})
+	  ident.replace( "\n", "" ).replace( "\t", "" ).replace( " ", "" )
       }
     }    
   }
@@ -249,20 +274,40 @@ with UUIDOps {
     cat : Cat, 
     ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
   ) : Node = {
-    <source>Do me!</source>
+    <source>{
+      cat match {
+	case idCat : EyeDCat => {
+	  val ident = idCat.ident_
+	  ident.replace( "\n", "" ).replace( "\t", "" ).replace( " ", "" )
+	}
+	case _ : ListCat => {
+	  throw new Exception( "shouldn't get here!" )
+	}
+      }
+    }</source>
   }
 
   def extractTypes(
-    fmls : Node
+    fmlsNode : Node
   ) : Node = {
-    <source>Do me!</source>
+    val ( fmls, fmlTyps ) = splitFmlsFromTypes( fmlsNode )
+
+    <source>{commaSeparateStrings( fmlTyps )}</source>
   }
 
   def extractAccesses(
-    inst : String,
-    fmls : Node
+    inst     : String,
+    fmlsNode : Node
   ) : Node = {
-    <source>Do me!</source>
+    val ( fmls, fmlTyps ) = splitFmlsFromTypes( fmlsNode )
+
+    <source>{
+      commaSeparateStrings( fmls.map( fml => inst + "." + fml ) )
+    }</source>
+  }
+
+  def generateVarName() : String = {
+    "var" + "_" + getUUID().toString
   }
 
   def compileRule(
@@ -283,8 +328,8 @@ with UUIDOps {
 	      // first time
 	      case None => {
 		val className = atomNTClassName( rule.label_, ctxt )
-		val varName = getUUID().toString
-		val members = compileItemList( rule.listitem_, ctxt )  
+		val varName = generateVarName()
+		val members = compileItemList( rule, ctxt )  
 		val catTrgt =
 		  <source>
 		  {
@@ -333,7 +378,7 @@ with UUIDOps {
   ) : Node = {
     val className = atomNTClassName( rule.label_, ctxt )
     val varName = getUUID().toString
-    val members = compileItemList( rule.listitem_, ctxt )
+    val members = compileItemList( rule, ctxt )
     val trgt =
       <source>
     class {className}(
@@ -368,10 +413,72 @@ with UUIDOps {
     }
   }
 
+  def grammarSchemaName(
+    ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
+  ) : String = {
+    "Schema" + "_" + getUUID().toString
+  }
+
+  def relationTargetName(
+    item : Item,
+    ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
+  ) : String = {
+    val cat = (item match {
+      case nTerm : NTerminal => {
+	nTerm.cat_
+      }
+      case _ => {
+	throw new Exception( "shouldn't be here" )
+      }
+    })
+
+    cat match {
+      case idCat : EyeDCat => {
+	throw new Exception( "shouldn't be here" )	
+      }
+      case lstCat : ListCat => {
+	lstCat.cat_ match {
+	  case idCat : EyeDCat => {
+	    idCat.ident_
+	  }
+	  case _ => {
+	    throw new Exception( "bailing on nest list cat case" )
+	  }
+	}
+      }
+    }
+  }
+
+  def relationSourceName(
+    rule : Rule,
+    ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
+  ) : String = {
+    atomNTClassName( rule.label_, ctxt ).toLowerCase
+  }
+
+  def relationSourceElementType(
+    rule : Rule,
+    ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
+  ) : String = {
+    atomNTClassName( rule.label_, ctxt )
+  }
+  
+  def relationName(
+    rule : Rule,
+    item : Item,
+    ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
+  ) : String = {    
+    (
+      relationSourceName( rule, ctxt )
+      + relationTargetName( item, ctxt )
+    )
+  }
+
   def compileItemList( 
-    items : ListItem,
+    rule : Rule,
     ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
   ) : (Node,Node) = {
+    val items = rule.listitem_
     val (atoms,molecules) =
       items.partition(
 	{
@@ -393,8 +500,8 @@ with UUIDOps {
       yield {
 	item match {
 	  case nterm : NTerminal => {
-	    val varName = getUUID().toString
-	    varName + ":" + (ctxt.nonTerminalMap.get( nterm ) match {
+	    val varName = generateVarName
+	    varName + " : " + (ctxt.nonTerminalMap.get( nterm ) match {
 	      case Some( n ) => {
 		n.text
 	      }
@@ -413,10 +520,20 @@ with UUIDOps {
     val moleRefs =
       for( item <- molecules )
       yield {
-	"Do me!"
+	val relSrcName = relationSourceName( rule, ctxt )
+	val relSrcElemType = relationSourceElementType( rule, ctxt )
+	val schemaName = grammarSchemaName( ctxt ) 
+	val relName = relationName( rule, item, ctxt )
+	<source>
+	  lazy val {relSrcName} : OneToMany[{relSrcElemType}] =
+	    {schemaName}.{relName}.left( this )
+	</source>.text
       }
 
-    ( <source>{atomRefs}</source>, <source>{moleRefs}</source> )
+    (
+      <source>{commaSeparateStrings( atomRefs.toList )}</source>,
+      <source>{moleRefs}</source>
+    )
   }
 
   def compileItem(
@@ -425,4 +542,99 @@ with UUIDOps {
   ) : Node = {
     <source/>
   }
+}
+
+trait ParseLBNFStream {
+  def in : java.io.InputStream
+  def lexer() : Yylex = lexer( in ) 
+  def lexer( in : java.io.InputStream ) : Yylex =
+    new Yylex( new java.io.InputStreamReader( in ) )
+  def parser() : parser = parser( in )
+  def parser( in : java.io.InputStream ) : parser =
+    new parser( lexer( in ) )
+  def parser( lexer : Yylex ) : parser =
+    new parser( lexer )
+  def parseTree() : LGrammar = parseTree( in )
+  def parseTree( in : java.io.InputStream ) : LGrammar =
+    (parser( lexer( in ) )).pLGrammar()
+  def parseTree( lexer : Yylex ) : LGrammar =
+    (parser( lexer )).pLGrammar()
+  def parseTree( parser : parser ) : LGrammar = parser.pLGrammar()    
+}
+
+trait SimpleLogging {
+  def log : java.io.PrintWriter
+  def log( s : String ) : Unit = {
+    log.println( s )
+  }
+}
+
+trait NodeIO extends SimpleLogging {
+  def out : java.io.PrintWriter
+  def myprintAll(nodes: Seq[Node]) {
+    for (node <- nodes)
+      myprint(node)
+  }
+  
+  def myprint(n: Node): Unit = n match {
+    case Text(s)          => out.print(s)
+    case EntityRef("lt")  => out.print('<')
+    case EntityRef("gt")  => out.print('>')
+    case EntityRef("amp") => out.print('&')
+    case atom: Atom[_]    => out.print(atom.text)
+    case elem: Elem       => myprintAll(elem.child)
+    case _                => log(
+      "error in xsd:run: encountered " + n.getClass() + " " + n.toString
+    )
+  }
+}
+
+class LBNFFile2SquerylCompiler(
+  override val packageName    : String,
+  val          inputFileName  : String,
+  val          outputFileName : String,
+  val          logFileName    : String
+) extends LBNF2SquerylCompiler( packageName )
+with ParseLBNFStream
+with NodeIO {
+  override lazy val in = new java.io.FileInputStream( inputFileName )
+  override lazy val out =
+    new java.io.PrintWriter(
+      new java.io.FileOutputStream( outputFileName )
+    )
+  override lazy val log =
+    new java.io.PrintWriter(
+      new java.io.FileOutputStream( logFileName )
+    )
+
+  // apparently the FileInputStream doesn't work well with the parser
+  def fileStreamToStringReader = {
+    val oStream = new java.io.ByteArrayOutputStream()
+    val buf : Array[Byte] = new Array( 1024 )    
+    var len : Int = in.read( buf )
+    while (len > 0) { oStream.write(buf,0,len); len = in.read(buf) }
+    val iStream =
+      new java.io.InputStreamReader(
+	new java.io.ByteArrayInputStream( oStream.toByteArray )
+      )
+    val reader = new java.io.BufferedReader( iStream )
+    val sb = new StringBuilder()
+    var line = reader.readLine
+    while (line != null) {
+      sb.append( line + "\n" ); line = reader.readLine
+    }
+    new java.io.StringReader( sb.toString )
+  }
+  def compileToNode : Node =
+    compileGrammar(
+      parseTree(
+	parser(
+	  new Yylex(
+	    fileStreamToStringReader
+	  )
+	)
+      )
+    )
+  def compileToNode( grammar : LGrammar ) : Node = compileGrammar( grammar )
+  def compileToFile : Unit = myprint( compileToNode )
 }
