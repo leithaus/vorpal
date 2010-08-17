@@ -30,29 +30,37 @@ import _root_.java.util.UUID
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 
-trait LBNF2SquerylXForm[Trgt,Ctxt[N,C,L,T]] {
+trait LBNF2SquerylXForm[Trgt,Ctxt[G,N,C,L,T]] {
   def context( grammar : LGrammar )
-  : Ctxt[NTerminal,Cat,Label,Trgt]
+  : Ctxt[LGrammar,NTerminal,Cat,Label,Trgt]
   def resetContext( grammar : LGrammar ) : Unit
   def compileGrammar( grammar : LGrammar ) : Trgt
 
   def compileDef(
-    defn : LDef, ctxt : Ctxt[NTerminal,Cat,Label,Trgt]
+    defn : LDef,
+    ctxt : Ctxt[LGrammar,NTerminal,Cat,Label,Trgt]
   ) : Trgt
   def compileRule(
-    rule : Def , ctxt : Ctxt[NTerminal,Cat,Label,Trgt]
+    rule : Def ,
+    ctxt : Ctxt[LGrammar,NTerminal,Cat,Label,Trgt]
   ) : Trgt
   def compileLabel(
-    rule  : Rule , ctxt : Ctxt[NTerminal,Cat,Label,Trgt]
+    rule : Rule ,
+    ctxt : Ctxt[LGrammar,NTerminal,Cat,Label,Trgt]
   ) : Trgt
   def compileItemList( 
     rule : Rule,
-    ctxt : Ctxt[NTerminal,Cat,Label,Node]
+    ctxt : Ctxt[LGrammar,NTerminal,Cat,Label,Trgt]
   ) : ( Trgt, Trgt )
   def compileItem(
     item : Item,
-    ctxt : Ctxt[NTerminal,Cat,Label,Trgt]
+    ctxt : Ctxt[LGrammar,NTerminal,Cat,Label,Trgt]
   ) : Trgt
+
+  def schema(
+    grammar : LGrammar,
+    ctxt : Ctxt[LGrammar,NTerminal,Cat,Label,Trgt]
+  ) : Trgt 
 }
 
 trait SimpleUtilities {
@@ -80,11 +88,14 @@ trait SimpleUtilities {
     }
   }
   
-  def commaSeparateStrings( ls : List[String] )
+  def commaSeparateStrings( addNL : Boolean )( ls : List[String] )
   : String = {
     ls match {
       case t :: ts => {
-	( t /: ts )( { ( acc, e ) => acc + " , " + e } )
+	( t /: ts )(
+	  { ( acc, e ) =>
+	    acc + " ," + (if (addNL) "\n" else " ") + e
+	 } )
       }
       case _ => ""
     }
@@ -93,27 +104,33 @@ trait SimpleUtilities {
 
 class NYIException( msg : String ) extends Exception( msg )
 
-trait MapCtxt[N,C,L,T] {
+trait MapCtxt[G,N,C,L,T] {
   def nonTerminalMap : Map[N,T]
   def categoryMap    : Map[C,T]
   def labelMap       : Map[L,T]
 }
 
-class SquerylCtxt[N,C,L,T](
-  override val nonTerminalMap : Map[N,T],
-  override val categoryMap    : Map[C,T],
-  override val labelMap       : Map[L,T],
-           val focus          : LGrammar
-) extends MapCtxt[N,C,L,T]
+class SquerylCtxt[G,N,C,L,T](
+  override val nonTerminalMap  : Map[N,T],
+  override val categoryMap     : Map[C,T],
+  override val labelMap        : Map[L,T],
+           val relationDeclMap : Map[G,T],
+           var schema          : Option[T], // ouch!
+           val focus           : G
+) extends MapCtxt[G,N,C,L,T] {
+  //def trgt() : Option[T]
+}
 
 object SquerylCtxt {
-  def unapply[N,C,L,T]( sqrlCtxt : SquerylCtxt[N,C,L,T] )
-  : Option[(Map[N,T],Map[C,T],Map[L,T],LGrammar)] = {
+  def unapply[G,N,C,L,T]( sqrlCtxt : SquerylCtxt[G,N,C,L,T] )
+  : Option[(Map[N,T],Map[C,T],Map[L,T],Map[G,T],Option[T],G)] = {
     Some(
       (
 	sqrlCtxt.nonTerminalMap,
 	sqrlCtxt.categoryMap,
 	sqrlCtxt.labelMap,
+	sqrlCtxt.relationDeclMap,
+	sqrlCtxt.schema,
 	sqrlCtxt.focus
       )
     )
@@ -133,16 +150,17 @@ with SimpleLogging {
   }
   def imports( ) : Node = {
     <source>
-    import org.squeryl._
-    import org.squeryl.customtypes.CustomTypesMode._
-    import org.squeryl.customtypes._
-    import org.squeryl.adapters.H2Adapter
-    import java.sql.{{SQLException, Connection => SQLConnection}}
-    import org.squeryl.dsl._
-    import java.net.URI
-    import _root_.java.util.UUID
-    import java.sql.DatabaseMetaData
-    import java.sql.ResultSet
+import com.biosimilarity.lift.model.SquerylSupport
+import org.squeryl._
+import org.squeryl.customtypes.CustomTypesMode._
+import org.squeryl.customtypes._
+import org.squeryl.adapters.H2Adapter    
+import org.squeryl.dsl._
+import java.sql.{{SQLException, Connection => SQLConnection}}
+import java.sql.DatabaseMetaData
+import java.sql.ResultSet
+import java.net.URI
+import java.util.UUID
     </source>
   }
   def packageDecl() : Node = {
@@ -152,19 +170,21 @@ with SimpleLogging {
   lazy val _contexts =
     new scala.collection.mutable.HashMap[
       LGrammar,
-      SquerylCtxt[NTerminal,Cat,Label,Node]
+      SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node]
     ]()
 
   def context( grammar : LGrammar )
-  : SquerylCtxt[NTerminal,Cat,Label,Node] = {
+  : SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node] = {
     _contexts.get( grammar ) match {
       case Some( ctxt ) => ctxt
       case None => {
 	val ctxt =
-	  new SquerylCtxt[NTerminal,Cat,Label,Node](
+	  new SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node](
 	    scala.collection.mutable.HashMap[NTerminal,Node](),
 	    scala.collection.mutable.HashMap[Cat,Node](),
 	    scala.collection.mutable.HashMap[Label,Node](),
+	    scala.collection.mutable.HashMap[LGrammar,Node](),
+	    None,
 	    grammar
 	  )
 	_contexts( grammar ) = ctxt
@@ -175,10 +195,12 @@ with SimpleLogging {
 
   def resetContext( grammar : LGrammar ) : Unit = {      
     _contexts( grammar ) =
-      new SquerylCtxt[NTerminal,Cat,Label,Node](
+      new SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node](
 	scala.collection.mutable.HashMap[NTerminal,Node](),
 	scala.collection.mutable.HashMap[Cat,Node](),
 	scala.collection.mutable.HashMap[Label,Node](),
+	scala.collection.mutable.HashMap[LGrammar,Node](),
+	None,
 	grammar
       )
   }
@@ -187,20 +209,28 @@ with SimpleLogging {
     log( "compiling LGrammar" )
     grammar match {
       case lgr : LGr => {
-	<source>{ packageDecl() }
-	{ imports( ) }
-
+	val ctxt = context( grammar )
+	<source>{ packageDecl().text }
+	{ imports( ).text }
 	{ for( ldef <- lgr.listldef_ )
 	  yield {
-	    compileDef( ldef, context( grammar ) )
+	    compileDef( ldef, ctxt ).text
 	  } }
+	{val scm = schema( grammar, ctxt )
+	 val scmText = scm.text
+	 (scmText.substring( 0, scmText.lastIndexOf( "}" ) )
+	  + "\n"
+	  + (ctxt.relationDeclMap.get( grammar ) match {
+	  case Some( rds ) => rds.text
+	  case None => ""
+	}) + "\n" + "}" ) }
 	</source>
       }
     }
   }
   def compileDef(
     defn : LDef,
-    ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
+    ctxt : SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node]
   ) : Node = {
     log( "compiling LDef" )
     defn match {
@@ -218,35 +248,57 @@ with SimpleLogging {
   
   def isCollectionRule(
     rule : Rule,
-    ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
-  ) : Boolean = {
+    ctxt : SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node]
+  ) : Option[String] = {
     rule.label_ match {
+      //case listCons : ListCons => Some( "(:)" )
+      //case listE : ListE => Some( "()" )
+      //case listOne : ListOne => Some( "(_)" )
+
       case labNoP : LabNoP => {
 	labNoP.labeleyed_ match {
-	  case id : EyeD => false
-	  case _ => true
+	  case listCons : ListCons => Some( "(:)" )
+	  case listE : ListE => Some( "()" )
+	  case listOne : ListOne => Some( "(_)" )
+	  case _ => None
 	}
       }
       case labP : LabP => {
 	labP.labeleyed_ match {
-	  case id : EyeD => false
-	  case _ => true
+	  case listCons : ListCons => Some( "(:)" )
+	  case listE : ListE => Some( "()" )
+	  case listOne : ListOne => Some( "(_)" )
+	  case _ => None
 	}
       }
-      case labF : LabF => {
-	// labNoP.labeleyed_1 match {
-// 	  case id : EyeD => false
-// 	  case _ => true
-// 	}
-	true
+
+      case _ => None
+    }
+  }
+
+  def isCoercionRule(
+    rule : Rule,
+    ctxt : SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node]
+  ) : Option[String] = {
+    rule.label_ match {
+      //case listCons : ListCons => Some( "(:)" )
+      //case listE : ListE => Some( "()" )
+      //case listOne : ListOne => Some( "(_)" )
+
+      case labNoP : LabNoP => {
+	labNoP.labeleyed_ match {
+	  case wild : Wild => Some( "_" )
+	  case _ => None
+	}
       }
-      case labPF : LabPF => {
-	// labNoP.labeleyed_1 match {
-// 	  case id : EyeD => false
-// 	  case _ => true
-// 	}
-	true
+      case labP : LabP => {
+	labP.labeleyed_ match {
+	  case wild : Wild => Some( "_" )
+	  case _ => None
+	}
       }
+
+      case _ => None
     }
   }
 
@@ -257,7 +309,7 @@ with SimpleLogging {
 
   def atomNTClassName(
     label : Label,
-    ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
+    ctxt : SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node]
   ) : String = {
     ctxt.labelMap.get( label ) match {
       case Some( n ) => {
@@ -308,8 +360,9 @@ with SimpleLogging {
   }
 
   def atomTraitName(
+    rule : Rule,
     cat : Cat, 
-    ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
+    ctxt : SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node]
   ) : Node = {
     <source>{
       cat match {
@@ -317,11 +370,48 @@ with SimpleLogging {
 	  val ident = idCat.ident_
 	  ident.replace( "\n", "" ).replace( "\t", "" ).replace( " ", "" )
 	}
-	case _ : ListCat => {
-	  throw new Exception( "shouldn't get here!" )
+	case listCat : ListCat => {
+	  //throw new Exception( "shouldn't get here!" )
+	  listCat.cat_ match {
+	    case idCat : EyeDCat => {
+	      val ident = idCat.ident_
+	      "[" + ident.replace( "\n", "" )
+		    .replace( "\t", "" )
+		    .replace( " ", "" ) + "]"
+	    }
+	    case _ => {	      
+	      throw new Exception( "bailing on nested case" )
+	    }
+	  }
 	}
       }
     }</source>
+  }
+
+  def categoryName(
+    cat : Cat, 
+    ctxt : SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node]
+  ) : String = {
+    cat match {
+      case idCat : EyeDCat => {
+	val ident = idCat.ident_
+	ident.replace( "\n", "" ).replace( "\t", "" ).replace( " ", "" )
+      }
+      case listCat : ListCat => {
+	//throw new Exception( "shouldn't get here!" )
+	listCat.cat_ match {
+	  case idCat : EyeDCat => {
+	    val ident = idCat.ident_
+	    "[" + ident.replace( "\n", "" )
+	    .replace( "\t", "" )
+	    .replace( " ", "" ) + "]"
+	  }
+	  case _ => {	      
+	    throw new Exception( "bailing on nested case" )
+	  }
+	}
+      }
+    }
   }
 
   def extractTypes(
@@ -329,7 +419,7 @@ with SimpleLogging {
   ) : Node = {
     val ( fmls, fmlTyps ) = splitFmlsFromTypes( fmlsNode )
 
-    <source>{commaSeparateStrings( fmlTyps )}</source>
+    <source>{commaSeparateStrings(false)( fmlTyps )}</source>
   }
 
   def extractAccesses(
@@ -339,7 +429,7 @@ with SimpleLogging {
     val ( fmls, fmlTyps ) = splitFmlsFromTypes( fmlsNode )
 
     <source>{
-      commaSeparateStrings( fmls.map( fml => inst + "." + fml ) )
+      commaSeparateStrings(false)( fmls.map( fml => inst + "." + fml ) )
     }</source>
   }
 
@@ -349,150 +439,170 @@ with SimpleLogging {
 
   def compileRule(
     rdef : Def ,
-    ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
+    ctxt : SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node]
   ) : Node = {
     log( "compiling Def" )
     rdef match {
       case rule : Rule => {
 	log( "compiling Rule" )
-	if ( isCollectionRule( rule, ctxt ) ) {
-	  // Do it!
-	  <source>throw NYIException( "collection rule" )</source>
-	}
-	else {	  
-	  val lblTrgt =
-	    ctxt.labelMap.get( rule.label_  ) match {
-	      // we've seen this one before
-	      case Some( n ) => n
-	      // first time
+	isCollectionRule( rule, ctxt ) match {
+	  case Some( colLbl ) => {
+	    // Do it!
+	    val ruleCat =
+	      rule.cat_ match {
+		case listCat : ListCat => {
+		  listCat.cat_
+		}
+		case _ =>
+		  throw new Exception( "collection rule with non-list cat" )
+	      }
+	    val catId = 
+	      ruleCat match {
+		case idCat : EyeDCat => idCat.ident_
+		case _ =>
+		  throw new Exception( "bailing on nested case" )
+	      }
+	    <source>/* not compiling a collection rule */
+</source>
+	  }
+	  case None => {	  
+	    isCoercionRule( rule, ctxt ) match {
+	      case Some( coercionLbl ) => {
+		<source>/* not compiling coercion rule */
+ </source>
+	      }
 	      case None => {
-		val className = atomNTClassName( rule.label_, ctxt )
-		val varName = generateVarName()
-		val members = compileItemList( rule, ctxt )  
-
-		log( "rule label : " + className )
-		log( "fields : " + members._1.text )
-		log( "relations : " + members._2.text )
-
-		val catTrgt =
-		  <source>
-		  {
-		    ctxt.categoryMap.get( rule.cat_ ) match {
-		      case Some( n ) => {<source/>}
-		      case None => {
-			val catTrgt =
-			  <source>
-			  trait {atomTraitName( rule.cat_, ctxt ).text}
+		val lblTrgt =
+		  ctxt.labelMap.get( rule.label_  ) match {
+		    // we've seen this one before
+		    case Some( n ) => n
+		    // first time
+		    case None => {
+		      val className = atomNTClassName( rule.label_, ctxt )
+		      //val varName = generateVarName()
+		      val varName = "inst" + "_" + className
+		      val (fields,relations) = compileItemList( rule, ctxt )  
 		      
-			  </source>
-			ctxt.categoryMap( rule.cat_ ) = catTrgt
+		      log( "rule label : " + className )
+		      log( "fields : " + fields.text )
+		      log( "relations : " + relations.text )
+		      
+		      val catTrgt =
+			<source>
+		      {
+			ctxt.categoryMap.get( rule.cat_ ) match {
+			  case Some( n ) => {<source/>}
+			  case None => {
+			    val catTrgt =
+			      <source>trait {atomTraitName( rule, rule.cat_, ctxt ).text}</source>
+			    ctxt.categoryMap( rule.cat_ ) = catTrgt
+			  }
+			}
 		      }
-		    }
-		  }
-		</source>
-		val trgt =
-		  <source>		  
-		  {catTrgt.text}
-		  class {className}(
-		    {members._1.text}
-		  ) extends {atomTraitName( rule.cat_, ctxt ).text} {{
-		    {members._2.text}
-		  }}
+		      </source>
+		      val trgt =
+			<source>{catTrgt.text + "\n"} class {className}(
+{"val id : Key,\n" + fields.text}
+) extends KeyedEntity[LongField]
+with {atomTraitName( rule, rule.cat_, ctxt ).text} {{
+  {relations.text}
+}}
 		
-		  object {className} {{
-		    def unapply( {varName} : {className} )
-		    : Option[({extractTypes( members._1 ).text})] = {
-		      Some( ({extractAccesses( varName, members._1 ).text}) ) 
-		    }
-		  }}
-		  </source>
-		ctxt.labelMap( rule.label_ ) = trgt
-		trgt
-	      }	    
+object {className} {{
+  def unapply( {varName} : {className} )
+  : Option[({"Key" + " , " + extractTypes( fields ).text + " , "})] = 
+{
+  Some( ({varName + ".id , " + extractAccesses( varName, fields ).text}) )
+}
+}}</source>
+		      ctxt.labelMap( rule.label_ ) = trgt
+		      trgt
+		    }	    
+		  }
+		lblTrgt
+	      }
 	    }
-	  lblTrgt
+	  }
 	}
       }
       case rules : Rules => {
-	<source>Do me!</source>
+	<source>/* didn't compile a rules object */</source>
       }
       case coercions : Coercions => {
-	<source>Do me!</source>
+	<source>/* didn't compile a coercions object */</source>
       }
       case comment : Absyn.Comment => {
-	<source>Do me!</source>
+	<source>/* not compiling a comment object */
+</source>
       }
       case comments : Absyn.Comments => {
-	<source>Do me!</source>
+	<source>/* not compiling a comments object */
+</source>
       }
       case entryp : Entryp => {
-	<source>Do me!</source>
+	<source>/* didn't compile an entryp object  */</source>
       }
       case fn : Function => {
-	<source>Do me!</source>
+	<source>/* didn't compile a function object */</source>
       }
       case intern : Internal => {
-	<source>Do me!</source>
+	<source>/* didn't compile an intern object */</source>
       }
       case layout : Layout => {
-	<source>Do me!</source>
+	<source>/* didn't compile a layout object */</source>
       }
       case layoutStop : LayoutStop => {
-	<source>Do me!</source>
+	<source>/* didn't compile a layoutStop object */</source>
       }
       case layoutTop : LayoutTop => {
-	<source>Do me!</source>
+	<source>/* didn't compile a layoutTop object */</source>
       }
       case posTkn : PosToken => {
-	<source>Do me!</source>
+	<source>/* didn't compile a PosToken object */</source>
       }
       case separator : Separator => {
-	<source>Do me!</source>
+	<source>/* didn't compile a Separator object */</source>
       }
       case terminator : Terminator => {
-	<source>Do me!</source>
+	<source>/* didn't compile a Terminator object */</source>
       }
       case tkn : Token => {
-	<source>Do me!</source>
+	<source>/* didn't compile a Token object */</source>
       }
     }
   }
 
   def compileLabel(
     rule : Rule,
-    ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
+    ctxt : SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node]
   ) : Node = {
     val className = atomNTClassName( rule.label_, ctxt )
     val varName = getUUID().toString
     val members = compileItemList( rule, ctxt )
     val trgt =
-      <source>
-    class {className}(
-      {members._1.text}
-    ) extends {atomTraitName( rule.cat_, ctxt ).text}
+      <source>class {className}(
+{members._1.text}
+) extends {atomTraitName( rule, rule.cat_, ctxt ).text}
     
-    object {className} {{
-      def unapply( {varName} : {className} )
-      : Option[({extractTypes( members._1 ).text})] = {
-	Some( ({extractAccesses( varName, members._1 ).text}) ) 
-      }
-    }}
-    </source>
+object {className} {{
+  def unapply( {varName} : {className} )
+  : Option[({extractTypes( members._1 ).text})] = {
+    Some( ({extractAccesses( varName, members._1 ).text}) ) 
+  }
+}}</source>
     ctxt.labelMap( rule.label_ ) = trgt
     trgt
   }
   
   def compileCategory(
     rule : Rule,
-    ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
+    ctxt : SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node]
   ) : Node = {
     ctxt.categoryMap.get( rule.cat_ ) match {
       case Some( n ) => n
       case None => {
 	val catTrgt =
-	  <source>
-	  trait {atomTraitName( rule.cat_, ctxt ).text}
-	  </source>
+	  <source>trait {atomTraitName( rule, rule.cat_, ctxt ).text}</source>
 	ctxt.categoryMap( rule.cat_ ) = catTrgt
 	catTrgt
       }
@@ -500,14 +610,14 @@ with SimpleLogging {
   }
 
   def grammarSchemaName(
-    ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
+    ctxt : SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node]
   ) : String = {
     "Schema" + "_" + getUUID().toString
   }
 
   def relationTargetName(
     item : Item,
-    ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
+    ctxt : SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node]
   ) : String = {
     val cat = (item match {
       case nTerm : NTerminal => {
@@ -537,14 +647,14 @@ with SimpleLogging {
 
   def relationSourceName(
     rule : Rule,
-    ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
+    ctxt : SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node]
   ) : String = {
     atomNTClassName( rule.label_, ctxt ).toLowerCase
   }
 
   def relationSourceElementType(
     rule : Rule,
-    ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
+    ctxt : SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node]
   ) : String = {
     atomNTClassName( rule.label_, ctxt )
   }
@@ -552,7 +662,7 @@ with SimpleLogging {
   def relationName(
     rule : Rule,
     item : Item,
-    ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
+    ctxt : SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node]
   ) : String = {    
     (
       relationSourceName( rule, ctxt )
@@ -562,7 +672,7 @@ with SimpleLogging {
 
   def compileItemList( 
     rule : Rule,
-    ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
+    ctxt : SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node]
   ) : (Node,Node) = {
     val items = rule.listitem_
     val (atoms,molecules) =
@@ -581,21 +691,34 @@ with SimpleLogging {
 	  }
 	}
       )
+    val catVarNameMap : scala.collection.mutable.HashMap[String,Int] =
+      new scala.collection.mutable.HashMap[String,Int]()
     val atomRefs =
       for( item <- atoms if item.isInstanceOf[NTerminal] )
-      yield {
+      yield {	
 	item match {
 	  case nterm : NTerminal => {
-	    val varName = generateVarName
+	    val catName = categoryName( nterm.cat_, ctxt )
+	    val catRefCount =
+	      catVarNameMap.get( catName ) match {
+		case Some( i ) => {
+		  val nrefCnt = i + 1
+		  catVarNameMap( catName ) = nrefCnt
+		  nrefCnt
+		}
+		case None => {
+		  catVarNameMap( catName ) = 1
+		  1
+		}
+	      }
+	    val varName = "m" + "_" + catName + "_" + catRefCount
 	    varName + " : " + (ctxt.nonTerminalMap.get( nterm ) match {
 	      case Some( n ) => {
 		n.text
 	      }
 	      case None => {
 		val ntNode =
-		  <source>
-		  Key {"/* " + atomTraitName( nterm.cat_, ctxt ) + " */"}
-	          </source>
+		  <source>Key {" /* " + atomTraitName( rule, nterm.cat_, ctxt ) + " */"}</source>
 		ctxt.nonTerminalMap( nterm ) = ntNode
 		ntNode.text
 	      }
@@ -603,30 +726,100 @@ with SimpleLogging {
 	  }
 	}
       }
-    val moleRefs =
+
+    val moleDecls =
       for( item <- molecules )
       yield {
 	val relSrcName = relationSourceName( rule, ctxt )
+	val relTrgtName = relationTargetName( item, ctxt ).toLowerCase
 	val relSrcElemType = relationSourceElementType( rule, ctxt )
 	val schemaName = grammarSchemaName( ctxt ) 
 	val relName = relationName( rule, item, ctxt )
-	<source>
-	  lazy val {relSrcName} : OneToMany[{relSrcElemType}] =
-	    {schemaName}.{relName}.left( this )
-	</source>.text
+	
+	val relDecl = 
+	  <source>val {relName} = oneToManyRelation( {relSrcName}, {relTrgtName} ).via((o, m) => o.id === m.{relSrcName}Id )</source>
+	
+	val relInstDecl =
+	<source>lazy val {relSrcName} : OneToMany[{relSrcElemType}] =
+	    {schemaName}.{relName}.left( this )</source>
+
+	( relDecl, relInstDecl )
       }
 
+    val ( moleRelDecls, moleRelInstDecls ) = moleDecls.unzip
+    val currentGrammar = ctxt.focus
+    val relationDecls : Node =
+      ctxt.relationDeclMap.get( currentGrammar ) match {
+	case Some( rds ) => rds
+	case None => <relationDecls></relationDecls>
+      }
+    val nRelDecls = 
+      <relationDecls>{ moleRelDecls.toList match {
+	case rd :: rds => {
+	  ( relationDecls.text /: moleRelDecls )(
+	    {
+	      ( acc, e ) => {
+		acc + "\n" + e.text
+	      }
+	    }
+	  )
+	}
+	case Nil => {
+	  relationDecls.text
+	}
+      } }</relationDecls>    
+
+    ctxt.relationDeclMap( currentGrammar ) = nRelDecls
+
     (
-      <source>{commaSeparateStrings( atomRefs.toList )}</source>,
-      <source>{moleRefs}</source>
+      <source>{commaSeparateStrings(true)( atomRefs.toList )}</source>,
+      <source>{moleRelInstDecls.map( _.text )}</source>
     )
   }
 
   def compileItem(
     item : Item,
-    ctxt : SquerylCtxt[NTerminal,Cat,Label,Node]
+    ctxt : SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node]
   ) : Node = {
     <source/>
+  }
+
+  def generateTableName(
+    label : Label,
+    ctxt : SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node]
+  ) : String = {
+    atomNTClassName( label, ctxt ).toLowerCase + "s"
+  }
+
+  def generateTableType(
+    label : Label,
+    ctxt : SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node]
+  ) : String = {
+    atomNTClassName( label, ctxt )
+  }
+
+  def schema(
+    grammar : LGrammar,
+    ctxt : SquerylCtxt[LGrammar,NTerminal,Cat,Label,Node]
+  ) : Node = {
+    ctxt.schema match {
+      case Some( n ) => n
+      case None => {
+	val trgt =
+	  <source>object {grammarSchemaName( ctxt )}
+    extends Schema with UUIDOps {{	  
+      { for( label <- ctxt.labelMap.keys )
+	  yield {
+	    val tableName = generateTableName( label, ctxt ).replace( "\n", "" ).replace( "\t", "" ).replace( " ", "" )
+	    val tableType = generateTableType( label, ctxt ).replace( "\n", "" ).replace( "\t", "" ).replace( " ", "" )
+	    <source>val {tableName} = table[{tableType}]( {"\"" + tableName + "\""} )</source>.text + "\n"
+	  } }
+    }}
+	</source>
+	ctxt.schema = Some( trgt )
+	trgt
+      }
+    }    
   }
 }
 
@@ -732,4 +925,35 @@ with NodeIO {
     )
   def compileToNode( grammar : LGrammar ) : Node = compileGrammar( grammar )
   def compileToFile : Unit = myprint( compileToNode )
+}
+
+object UnitTestLBNFFile2SquerylCompiler {
+  def testCompiler(
+    inputFileName  : String,
+    outputFileName : String,
+    logFileName    : String
+  ) = {
+    val lbnfc = new LBNFFile2SquerylCompiler(
+      "com.biosimilarity.lbnf",
+      Blogger(),
+      // "/Users/lgm/work/src/projex/stellar/vorpal/services/compiler/src/main/bnfc/rlambdaDC.cf"
+      inputFileName,
+      // "/Users/lgm/work/src/projex/stellar/vorpal/services/compiler/tmp/rlambdaDCSqueryl.scala"
+      outputFileName,
+      // "/Users/lgm/work/src/projex/stellar/vorpal/services/compiler/tmp/rlambdaDCSqueryl.log"
+      logFileName
+    )
+    val reader = lbnfc.fileStreamToStringReader
+    val grammar = lbnfc.parseTree( new parser( new Yylex( reader ) ) )
+    val ctxt = lbnfc.context( grammar )
+    val trgt = lbnfc.compileGrammar( grammar )
+
+    val printer = new java.io.PrintWriter( System.out )
+
+    printer.print( trgt.text )
+    
+    printer.flush
+    
+    (grammar, ctxt)
+  }
 }
